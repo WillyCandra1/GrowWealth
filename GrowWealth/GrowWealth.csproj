@@ -67,6 +67,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Content Include="style.css" />
     <Content Include="before_landing.Master" />
     <Content Include="after_landing.Master" />
@@ -95,6 +96,14 @@
     <Compile Include="Register.aspx.cs">
       <DependentUpon>Register.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
+=======
+    <Content Include="Global.asax" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+>>>>>>> cda7afc344bf18403241419e841c1a0eac703cea
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -106,6 +115,17 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Code\" />
+    <Folder Include="App_Data\" />
+    <Folder Include="Assets\css\" />
+    <Folder Include="Assets\images\" />
+    <Folder Include="Assets\js\" />
+    <Folder Include="Master\" />
+    <Folder Include="Pages\Admin\" />
+    <Folder Include="Pages\Member\" />
+    <Folder Include="Pages\Public\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
