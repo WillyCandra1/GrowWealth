@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%: Page.Title %> - Grow Wealth</title>
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="~/Assets/css/style.css" rel="stylesheet" type="text/css" runat="server" />
     <asp:ContentPlaceHolder ID="HeadContent" runat="server">
     </asp:ContentPlaceHolder>
 </head>
@@ -14,18 +14,18 @@
     <form runat="server" id="form1">
         <header class="navbar">
             <div class="container">
-                <a href="Default.aspx" class="navbar-   brand">Grow Wealth</a>
+                <a href="~/" runat="server" class="navbar-brand">Grow Wealth</a>
                 
                 <div class="navbar-links">
-                    <a href="Default.aspx">Courses</a>
+                    <a href="~/" runat="server">Courses</a>
                     <a href="#">About</a>
                 </div>
 
                 <div class="navbar-actions">
                     <asp:LoginView runat="server" ViewStateMode="Disabled">
                         <AnonymousTemplate>
-                            <a href="Login.aspx" class="btn btn-outline">Login</a>
-                            <a href="Register.aspx" class="btn btn-primary">Register</a>
+                            <a href="~/Pages/Public/Login.aspx" runat="server" class="btn btn-outline">Login</a>
+                            <a href="~/Pages/Public/Register.aspx" runat="server" class="btn btn-primary">Register</a>
                         </AnonymousTemplate>
                         <LoggedInTemplate>
                             <span style="margin-right: 1rem; color: var(--text-secondary);">Welcome, <%: Context.User.Identity.Name  %>!</span>

@@ -67,21 +67,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
-    <Content Include="style.css" />
-    <Content Include="before_landing.Master" />
-    <Content Include="after_landing.Master" />
+    <Content Include="Assets\css\style.css" />
+    <Content Include="Master\before_landing.Master" />
+    <Content Include="Master\after_landing.Master" />
     <Content Include="Default.aspx" />
-    <Content Include="Login.aspx" />
-    <Content Include="Register.aspx" />
+    <Content Include="Pages\Public\Login.aspx" />
+    <Content Include="Pages\Public\Register.aspx" />
+    <Content Include="Global.asax" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="before_landing.Master.cs">
+    <Compile Include="Master\before_landing.Master.cs">
       <DependentUpon>before_landing.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="after_landing.Master.cs">
+    <Compile Include="Master\after_landing.Master.cs">
       <DependentUpon>after_landing.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -89,21 +89,16 @@
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Login.aspx.cs">
+    <Compile Include="Pages\Public\Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Register.aspx.cs">
+    <Compile Include="Pages\Public\Register.aspx.cs">
       <DependentUpon>Register.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
-=======
-    <Content Include="Global.asax" />
-    <Content Include="Web.config" />
-  </ItemGroup>
-  <ItemGroup>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
->>>>>>> cda7afc344bf18403241419e841c1a0eac703cea
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

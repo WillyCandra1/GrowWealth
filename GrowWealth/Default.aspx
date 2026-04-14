@@ -1,4 +1,4 @@
-<%@ Page Title="Home" Language="C#" MasterPageFile="~/before_landing.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="GrowWealth.Default" %>
+<%@ Page Title="Home" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="GrowWealth.Default" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <!-- Additional head content for Default.aspx if needed -->

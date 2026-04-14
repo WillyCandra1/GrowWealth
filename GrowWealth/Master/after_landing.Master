@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%: Page.Title %> - Grow Wealth</title>
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="~/Assets/css/style.css" rel="stylesheet" runat="server" type="text/css" />
     <asp:ContentPlaceHolder ID="HeadContent" runat="server">
     </asp:ContentPlaceHolder>
 </head>
@@ -14,12 +14,12 @@
     <form runat="server" id="form1" style="flex: 1; display: flex; flex-direction: column;">
         <!-- Top Navbar for Logged In User -->
         <header class="topbar">
-            <a href="Default.aspx" class="navbar-brand">Grow Wealth</a>
+            <a href="~/" runat="server" class="navbar-brand">Grow Wealth</a>
             
             <div class="navbar-actions">
                 <asp:LoginView runat="server" ViewStateMode="Disabled">
                     <AnonymousTemplate>
-                        <a href="Login.aspx" class="btn btn-primary">Login</a>
+                        <a href="~/Pages/Public/Login.aspx" runat="server" class="btn btn-primary">Login</a>
                     </AnonymousTemplate>
                     <LoggedInTemplate>
                         <span style="margin-right: 1rem; color: var(--text-secondary); font-weight: 500;">

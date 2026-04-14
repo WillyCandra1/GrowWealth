@@ -42,7 +42,7 @@ namespace GrowWealth
                 {
                     // Success, would typically create user here and redirect
                     pnlError.Visible = false;
-                    Response.Redirect("~/Login.aspx");
+                    Response.Redirect("~/Pages/Public/Login.aspx");
                 }
             }
         }
