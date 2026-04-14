@@ -1,0 +1,51 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="before_landing.Master.cs" Inherits="GrowWealth.before_landing" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%: Page.Title %> - Grow Wealth</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form runat="server" id="form1">
+        <header class="navbar">
+            <div class="container">
+                <a href="Default.aspx" class="navbar-   brand">Grow Wealth</a>
+                
+                <div class="navbar-links">
+                    <a href="Default.aspx">Courses</a>
+                    <a href="#">About</a>
+                </div>
+
+                <div class="navbar-actions">
+                    <asp:LoginView runat="server" ViewStateMode="Disabled">
+                        <AnonymousTemplate>
+                            <a href="Login.aspx" class="btn btn-outline">Login</a>
+                            <a href="Register.aspx" class="btn btn-primary">Register</a>
+                        </AnonymousTemplate>
+                        <LoggedInTemplate>
+                            <span style="margin-right: 1rem; color: var(--text-secondary);">Welcome, <%: Context.User.Identity.Name  %>!</span>
+                            <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Logout" LogoutPageUrl="~/" CssClass="btn btn-outline" />
+                        </LoggedInTemplate>
+                    </asp:LoginView>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server">
+            </asp:ContentPlaceHolder>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; <%: DateTime.Now.Year %> Grow Wealth &middot; Privacy &middot; Terms</p>
+            </div>
+        </footer>
+    </form>
+</body>
+</html>

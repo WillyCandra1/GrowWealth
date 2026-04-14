@@ -1,0 +1,54 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="after_landing.Master.cs" Inherits="GrowWealth.after_landing" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%: Page.Title %> - Grow Wealth</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body style="min-height: 100vh; margin: 0; display: flex; flex-direction: column;">
+    <form runat="server" id="form1" style="flex: 1; display: flex; flex-direction: column;">
+        <!-- Top Navbar for Logged In User -->
+        <header class="topbar">
+            <a href="Default.aspx" class="navbar-brand">Grow Wealth</a>
+            
+            <div class="navbar-actions">
+                <asp:LoginView runat="server" ViewStateMode="Disabled">
+                    <AnonymousTemplate>
+                        <a href="Login.aspx" class="btn btn-primary">Login</a>
+                    </AnonymousTemplate>
+                    <LoggedInTemplate>
+                        <span style="margin-right: 1rem; color: var(--text-secondary); font-weight: 500;">
+                            <%: Context.User.Identity.Name ?? "Ahmad Zaki" %> <!-- Fallback to demo identity if null -->
+                        </span>
+                        <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Logout" LogoutPageUrl="~/" CssClass="btn btn-outline" />
+                    </LoggedInTemplate>
+                </asp:LoginView>
+            </div>
+        </header>
+
+        <!-- Sidebar Layout -->
+        <div class="dashboard-wrapper">
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#">Courses</a></li>
+                    <li><a href="#">Virtual Lab</a></li>
+                    <li><a href="#">Profile</a></li>
+                </ul>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="dashboard-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                </asp:ContentPlaceHolder>
+            </main>
+        </div>
+    </form>
+</body>
+</html>
