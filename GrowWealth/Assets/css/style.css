@@ -15,10 +15,12 @@
 }
 
 * {
-    margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
 }
 
 body {
@@ -160,14 +162,18 @@ h2 {
 .form-control {
     width: 100%;
     padding: 0.75rem;
+    border: 1px solid #e4e4e9; /* Fallback for var(--border) */
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s;
+    background-color: #ffffff; /* Fallback for var(--surface) */
+    color: #1e1e24; /* Fallback for var(--text-primary) */
 }
 
 .form-control:focus {
+    border-color: #5142be; /* Fallback for var(--primary) */
     border-color: var(--primary);
 }
 

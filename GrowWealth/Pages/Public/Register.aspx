@@ -1,5 +1,5 @@
 <%@ Page Title="Register" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true"
-    CodeBehind="Register.aspx.cs" Inherits="GrowWealth.Register" %>
+    CodeBehind="Register.aspx.cs" Inherits="GrowWealth.Pages.Public.Register" %>
 
     <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     </asp:Content>
@@ -16,8 +16,8 @@
             </asp:Panel>
 
             <div class="form-group">
-                <label class="form-label">Full name</label>
-                <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" placeholder="e.g. Ahmad Zaki">
+                <label class="form-label">Full name&nbsp;&nbsp;&nbsp; </label>
+                &nbsp;<asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" placeholder="e.g. Ahmad Zaki">
                 </asp:TextBox>
                 <asp:RequiredFieldValidator ID="rfvFullName" runat="server" ControlToValidate="txtFullName"
                     ErrorMessage="Full name is required" CssClass="text-danger" Display="Dynamic">

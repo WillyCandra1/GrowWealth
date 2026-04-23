@@ -2,20 +2,10 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace GrowWealth
+namespace GrowWealth.Pages.Public
 {
     public partial class Register : Page
     {
-        protected global::System.Web.UI.WebControls.TextBox txtFullName;
-        protected global::System.Web.UI.WebControls.TextBox txtEmail;
-        protected global::System.Web.UI.WebControls.TextBox txtPassword;
-        protected global::System.Web.UI.WebControls.TextBox txtConfirmPassword;
-        protected global::System.Web.UI.WebControls.DropDownList ddlUserType;
-        protected global::System.Web.UI.WebControls.CheckBox chkTerms;
-        protected global::System.Web.UI.WebControls.Panel pnlError;
-        protected global::System.Web.UI.WebControls.Literal litErrorMsg;
-        protected global::System.Web.UI.WebControls.Button btnRegister;
-
         protected void Page_Load(object sender, EventArgs e)
         {
 

@@ -1,10 +1,10 @@
-﻿CREATE TABLE Role (
+CREATE TABLE Role (
     RoleID   INT          IDENTITY(1,1),
     RoleName VARCHAR(100) NOT NULL UNIQUE,
     CONSTRAINT PK_Role PRIMARY KEY (RoleID)
 );
 
-CREATE TABLE Users (
+CREATE TABLE [User] (
     UserID         INT           IDENTITY(1,1),
     RoleID         INT           NOT NULL,
     FullName       NVARCHAR(255) NOT NULL,
@@ -15,24 +15,24 @@ CREATE TABLE Users (
     AccountStatus  NVARCHAR(50)  DEFAULT 'Active',
     LastLoginAt    DATETIME2,
     CreatedAt      DATETIME2     DEFAULT GETDATE(),
-    CONSTRAINT PK_Users      PRIMARY KEY (UserID),
-    CONSTRAINT FK_Users_Role FOREIGN KEY (RoleID)
+    CONSTRAINT PK_User      PRIMARY KEY (UserID),
+    CONSTRAINT FK_User_Role FOREIGN KEY (RoleID)
         REFERENCES Role(RoleID)
 );
 
-CREATE TABLE Login_Logs (
+CREATE TABLE Login_Log (
     LogID        INT           IDENTITY(1,1),
     UserID       INT,
     LoginAt      DATETIME2     DEFAULT GETDATE(),
     IpAddress    NVARCHAR(45)  NOT NULL,
     DeviceInfo   NVARCHAR(255),
     LoginSuccess BIT           NOT NULL DEFAULT 0,
-    CONSTRAINT PK_Login_Logs        PRIMARY KEY (LogID),
-    CONSTRAINT FK_Login_Logs_Users  FOREIGN KEY (UserID)
-        REFERENCES Users(UserID) ON DELETE SET NULL
+    CONSTRAINT PK_Login_Log        PRIMARY KEY (LogID),
+    CONSTRAINT FK_Login_Log_User  FOREIGN KEY (UserID)
+        REFERENCES [User](UserID) ON DELETE SET NULL
 );
 
-CREATE TABLE Courses (
+CREATE TABLE Course (
     CourseID        INT            IDENTITY(1,1),
     Title           NVARCHAR(255)  NOT NULL,
     Description     NVARCHAR(MAX),
@@ -40,32 +40,32 @@ CREATE TABLE Courses (
     ThumbnailURL    NVARCHAR(512),
     Status          NVARCHAR(50)   DEFAULT 'Draft',
     CreatedAt       DATETIME2      DEFAULT GETDATE(),
-    CONSTRAINT PK_Courses PRIMARY KEY (CourseID)
+    CONSTRAINT PK_Course PRIMARY KEY (CourseID)
 );
 
-CREATE TABLE Enrollments (
+CREATE TABLE Enrollment (
     EnrollmentID INT       IDENTITY(1,1),
     UserID       INT       NOT NULL,
     CourseID     INT       NOT NULL,
     EnrolledAt   DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT PK_Enrollments         PRIMARY KEY (EnrollmentID),
-    CONSTRAINT FK_Enrollments_Users   FOREIGN KEY (UserID)
-        REFERENCES Users(UserID)   ON DELETE CASCADE,
-    CONSTRAINT FK_Enrollments_Courses FOREIGN KEY (CourseID)
-        REFERENCES Courses(CourseID) ON DELETE CASCADE,
+    CONSTRAINT PK_Enrollment         PRIMARY KEY (EnrollmentID),
+    CONSTRAINT FK_Enrollment_User   FOREIGN KEY (UserID)
+        REFERENCES [User](UserID)   ON DELETE CASCADE,
+    CONSTRAINT FK_Enrollment_Course FOREIGN KEY (CourseID)
+        REFERENCES Course(CourseID) ON DELETE CASCADE,
     CONSTRAINT UQ_User_Course UNIQUE (UserID, CourseID)
 );
 
-CREATE TABLE Modules (
+CREATE TABLE Module (
     ModuleID         INT            IDENTITY(1,1),
     CourseID         INT            NOT NULL,
     Title            NVARCHAR(255)  NOT NULL,
     Content          NVARCHAR(MAX),
     OrderIndex       INT            NOT NULL,
     EstimatedMinutes INT,
-    CONSTRAINT PK_Modules         PRIMARY KEY (ModuleID),
-    CONSTRAINT FK_Modules_Courses FOREIGN KEY (CourseID)
-        REFERENCES Courses(CourseID) ON DELETE CASCADE
+    CONSTRAINT PK_Module         PRIMARY KEY (ModuleID),
+    CONSTRAINT FK_Module_Course FOREIGN KEY (CourseID)
+        REFERENCES Course(CourseID) ON DELETE CASCADE
 );
 
 
@@ -76,24 +76,24 @@ CREATE TABLE UserProgress (
     IsCompleted BIT       NOT NULL DEFAULT 0,
     CompletedAt DATETIME2,
     CONSTRAINT PK_UserProgress         PRIMARY KEY (ProgressID),
-    CONSTRAINT FK_UserProgress_Users   FOREIGN KEY (UserID)
-        REFERENCES Users(UserID)   ON DELETE CASCADE,
-    CONSTRAINT FK_UserProgress_Modules FOREIGN KEY (ModuleID)
-        REFERENCES Modules(ModuleID) ON DELETE NO ACTION,
+    CONSTRAINT FK_UserProgress_User   FOREIGN KEY (UserID)
+        REFERENCES [User](UserID)   ON DELETE CASCADE,
+    CONSTRAINT FK_UserProgress_Module FOREIGN KEY (ModuleID)
+        REFERENCES Module(ModuleID) ON DELETE NO ACTION,
     CONSTRAINT UQ_User_Module UNIQUE (UserID, ModuleID)
 );
 
-CREATE TABLE Quizzes (
+CREATE TABLE Quiz (
     QuizID          INT           IDENTITY(1,1),
     ModuleID        INT           NOT NULL UNIQUE,
     Title           NVARCHAR(255) NOT NULL,
     PassMarkPercent DECIMAL(5,2)  NOT NULL DEFAULT 60.00,
-    CONSTRAINT PK_Quizzes         PRIMARY KEY (QuizID),
-    CONSTRAINT FK_Quizzes_Modules FOREIGN KEY (ModuleID)
-        REFERENCES Modules(ModuleID) ON DELETE CASCADE
+    CONSTRAINT PK_Quiz         PRIMARY KEY (QuizID),
+    CONSTRAINT FK_Quiz_Module FOREIGN KEY (ModuleID)
+        REFERENCES Module(ModuleID) ON DELETE CASCADE
 );
 
-CREATE TABLE Questions (
+CREATE TABLE Question (
     QuestionID    INT            IDENTITY(1,1),
     QuizID        INT            NOT NULL,
     QuestionText  NVARCHAR(MAX)  NOT NULL,
@@ -103,12 +103,12 @@ CREATE TABLE Questions (
     OptionD       NVARCHAR(512)  NOT NULL,
     CorrectAnswer CHAR(1)        NOT NULL,
     HintText      NVARCHAR(MAX),
-    CONSTRAINT PK_Questions         PRIMARY KEY (QuestionID),
-    CONSTRAINT FK_Questions_Quizzes FOREIGN KEY (QuizID)
-        REFERENCES Quizzes(QuizID) ON DELETE CASCADE
+    CONSTRAINT PK_Question         PRIMARY KEY (QuestionID),
+    CONSTRAINT FK_Question_Quiz FOREIGN KEY (QuizID)
+        REFERENCES Quiz(QuizID) ON DELETE CASCADE
 );
 
-CREATE TABLE Quiz_Attempts (
+CREATE TABLE Quiz_Attempt (
     AttemptID      INT       IDENTITY(1,1),
     UserID         INT       NOT NULL,
     QuizID         INT       NOT NULL,
@@ -116,11 +116,11 @@ CREATE TABLE Quiz_Attempts (
     TotalQuestions INT       NOT NULL,
     IsPassed       BIT       NOT NULL DEFAULT 0,
     AttemptedAt    DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT PK_Quiz_Attempts         PRIMARY KEY (AttemptID),
-    CONSTRAINT FK_Quiz_Attempts_Users   FOREIGN KEY (UserID)
-        REFERENCES Users(UserID)   ON DELETE CASCADE,
-    CONSTRAINT FK_Quiz_Attempts_Quizzes FOREIGN KEY (QuizID)
-        REFERENCES Quizzes(QuizID) ON DELETE NO ACTION
+    CONSTRAINT PK_Quiz_Attempt         PRIMARY KEY (AttemptID),
+    CONSTRAINT FK_Quiz_Attempt_User   FOREIGN KEY (UserID)
+        REFERENCES [User](UserID)   ON DELETE CASCADE,
+    CONSTRAINT FK_Quiz_Attempt_Quiz FOREIGN KEY (QuizID)
+        REFERENCES Quiz(QuizID) ON DELETE NO ACTION
 );
 
 INSERT INTO Role (RoleName) VALUES ('Admin');

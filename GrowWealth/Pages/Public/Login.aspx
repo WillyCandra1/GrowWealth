@@ -1,5 +1,5 @@
 <%@ Page Title="Login" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true"
-    CodeBehind="Login.aspx.cs" Inherits="GrowWealth.Login" %>
+    CodeBehind="Login.aspx.cs" Inherits="GrowWealth.Pages.Public.Login" %>
 
     <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     </asp:Content>

@@ -1,17 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
 
-namespace GrowWealth
+namespace GrowWealth.Pages.Public
 {
     public partial class Login : Page
     {
-        protected global::System.Web.UI.WebControls.TextBox txtEmail;
-        protected global::System.Web.UI.WebControls.TextBox txtPassword;
-        protected global::System.Web.UI.WebControls.Panel pnlError;
-        protected global::System.Web.UI.WebControls.Literal litErrorMsg;
-        protected global::System.Web.UI.WebControls.CheckBox chkRememberMe;
-        protected global::System.Web.UI.WebControls.Button btnLogin;
-
         protected void Page_Load(object sender, EventArgs e)
         {
 
