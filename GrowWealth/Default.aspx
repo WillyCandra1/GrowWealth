@@ -6,15 +6,24 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <h1>Grow your wealth,<br />one module at a time</h1>
-            <p>Interactive courses on budgeting, investing, and risk management<br />for students and young professionals.</p>
-            <div class="hero-actions">
-                <a href="Register.aspx" class="btn btn-primary">Get started free</a>
-                <a href="#" class="btn btn-outline">Browse courses</a>
-            </div>
-        </section>
+        <asp:PlaceHolder ID="phAnonymous" runat="server">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1>Grow your wealth,<br />one module at a time</h1>
+                <p>Interactive courses on budgeting, investing, and risk management<br />for students and young professionals.</p>
+                <div class="hero-actions">
+                    <a href="Register.aspx" class="btn btn-primary">Get started free</a>
+                    <a href="#" class="btn btn-outline">Browse courses</a>
+                </div>
+            </section>
+        </asp:PlaceHolder>
+
+        <asp:PlaceHolder ID="phDashboard" runat="server" Visible="false">
+             <section style="margin-bottom: 2rem;">
+                <h1>Welcome back, <asp:Literal ID="litUserName" runat="server" />!</h1>
+                <p>Ready to continue your financial journey?</p>
+            </section>
+        </asp:PlaceHolder>
 
         <!-- Featured Courses Section -->
         <section>

@@ -14,7 +14,7 @@
     <form runat="server" id="form1">
         <header class="navbar">
             <div class="container">
-                <a href="~/" runat="server" class="navbar-brand">Grow Wealth</a>
+                <a href="~/Default.aspx" runat="server" class="navbar-brand">Grow Wealth</a>
                 
                 <div class="navbar-links">
                     <a href="~/" runat="server">Courses</a>

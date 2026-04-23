@@ -1,3 +1,16 @@
+-- Drop tables in reverse order of dependencies to avoid constraint errors
+IF OBJECT_ID('dbo.Quiz_Attempt', 'U') IS NOT NULL DROP TABLE dbo.Quiz_Attempt;
+IF OBJECT_ID('dbo.Question', 'U') IS NOT NULL DROP TABLE dbo.Question;
+IF OBJECT_ID('dbo.Quiz', 'U') IS NOT NULL DROP TABLE dbo.Quiz;
+IF OBJECT_ID('dbo.UserProgress', 'U') IS NOT NULL DROP TABLE dbo.UserProgress;
+IF OBJECT_ID('dbo.Enrollment', 'U') IS NOT NULL DROP TABLE dbo.Enrollment;
+IF OBJECT_ID('dbo.Module', 'U') IS NOT NULL DROP TABLE dbo.Module;
+IF OBJECT_ID('dbo.Login_Log', 'U') IS NOT NULL DROP TABLE dbo.Login_Log;
+IF OBJECT_ID('dbo.[User]', 'U') IS NOT NULL DROP TABLE dbo.[User];
+IF OBJECT_ID('dbo.Course', 'U') IS NOT NULL DROP TABLE dbo.Course;
+IF OBJECT_ID('dbo.Role', 'U') IS NOT NULL DROP TABLE dbo.Role;
+
+-- Create Tables
 CREATE TABLE Role (
     RoleID   INT          IDENTITY(1,1),
     RoleName VARCHAR(100) NOT NULL UNIQUE,
@@ -11,9 +24,8 @@ CREATE TABLE [User] (
     Email          NVARCHAR(255) NOT NULL UNIQUE,
     PasswordHash   NVARCHAR(255) NOT NULL,
     ProfilePicture NVARCHAR(512),
-    UserType       NVARCHAR(100),
+    UserProfession NVARCHAR(100),
     AccountStatus  NVARCHAR(50)  DEFAULT 'Active',
-    LastLoginAt    DATETIME2,
     CreatedAt      DATETIME2     DEFAULT GETDATE(),
     CONSTRAINT PK_User      PRIMARY KEY (UserID),
     CONSTRAINT FK_User_Role FOREIGN KEY (RoleID)
@@ -123,5 +135,17 @@ CREATE TABLE Quiz_Attempt (
         REFERENCES Quiz(QuizID) ON DELETE NO ACTION
 );
 
+-- Seed Initial Data
 INSERT INTO Role (RoleName) VALUES ('Admin');
 INSERT INTO Role (RoleName) VALUES ('Member');
+
+-- Dummy Users for Testing
+-- RoleID 1 = Admin, RoleID 2 = Member
+INSERT INTO [User] (RoleID, FullName, Email, PasswordHash, UserProfession, AccountStatus) 
+VALUES (1, 'System Administrator', 'admin@growwealth.com', 'admin123', 'IT Specialist', 'Active');
+
+INSERT INTO [User] (RoleID, FullName, Email, PasswordHash, UserProfession, AccountStatus) 
+VALUES (2, 'Ahmad Zaki', 'ahmad@email.com', 'password123', 'University Student', 'Active');
+
+INSERT INTO [User] (RoleID, FullName, Email, PasswordHash, UserProfession, AccountStatus) 
+VALUES (2, 'Sarah Jenkins', 'sarah@email.com', 'password123', 'Young Professional', 'Active');
