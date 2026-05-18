@@ -15,10 +15,6 @@
 
                 <asp:DropDownList ID="CourseList" runat="server" AutoPostBack="true"
                     OnSelectedIndexChanged="Course_SelectedIndexChanged">
-                    <asp:ListItem Value="">Select A Course: </asp:ListItem>
-                    <asp:ListItem Value="1">Budgeting Basics</asp:ListItem>
-                    <asp:ListItem Value="2">Investment 101</asp:ListItem>
-                    <asp:ListItem Value="3">Portofolio Strategy</asp:ListItem>
                 </asp:DropDownList>
 
                 <asp:DropDownList ID="ModuleList" runat="server">
