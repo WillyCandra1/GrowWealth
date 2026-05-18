@@ -42,6 +42,10 @@ namespace GrowWealth.Pages.Admin
                     ));
                 }
             }
+            QuizHeader.Visible = false;
+            QuestionList.DataSource = null;
+            QuestionList.DataBind();
+            ViewState["QuizID"] = null;
         }
         protected void LoadCourses()
         {

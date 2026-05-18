@@ -1,4 +1,4 @@
-﻿<%@ Page Title="ManageQuiz" Language="C#" MasterPageFile="~/Master/after_landing.Master" AutoEventWireup="true" 
+﻿<%@ Page Title="ManageQuiz" Language="C#" MasterPageFile="~/Master/Admin.Master" AutoEventWireup="true" 
     CodeBehind="ManageQuiz.aspx.cs" Inherits="GrowWealth.Pages.Admin.ManageQuiz" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">

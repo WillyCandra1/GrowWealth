@@ -1,0 +1,43 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Admin.Master.cs" Inherits="GrowWealth.Master.Admin" %>
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%: Page.Title %> - Grow Wealth Admin</title>
+    <link href="~/Assets/css/style.css" rel="stylesheet" type="text/css" runat="server" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body style="min-height:100vh; margin:0; display:flex; flex-direction:column;">
+    <form runat="server" id="form1" style="flex:1; display:flex; flex-direction:column;">
+
+        <header class="topbar">
+            <a href="~/Default.aspx" runat="server" class="navbar-brand">Grow Wealth</a>
+            <div class="navbar-actions">
+                <span style="margin-right:1rem; color:var(--text-secondary); font-weight:500;">
+                    Admin
+                </span>
+                <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Logout" 
+                    LogoutPageUrl="~/" CssClass="btn btn-outline" />
+            </div>
+        </header>
+
+        <div class="dashboard-wrapper">
+            <aside class="sidebar">
+                <ul class="sidebar-nav">
+                    <li><a href="~/Pages/Admin/AdminDashboard.aspx" runat="server">Dashboard</a></li>
+                    <li><a href="~/Pages/Admin/ManageCourse.aspx" runat="server">Manage Courses</a></li>
+                    <li><a href="~/Pages/Admin/ManageUser.aspx" runat="server">Manage Users</a></li>
+                    <li><a href="~/Pages/Admin/ManageQuiz.aspx" runat="server">Manage Quiz</a></li>
+                </ul>
+            </aside>
+            <main class="dashboard-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                </asp:ContentPlaceHolder>
+            </main>
+        </div>
+
+    </form>
+</body>
+</html>

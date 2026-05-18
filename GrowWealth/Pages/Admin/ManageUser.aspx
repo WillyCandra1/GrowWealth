@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Manage Users" Language="C#" MasterPageFile="~/Master/after_landing.Master" AutoEventWireup="true" CodeBehind="ManageUser.aspx.cs" Inherits="GrowWealth.Pages.Admin.ManageUser" %>
+﻿<%@ Page Title="Manage Users" Language="C#" MasterPageFile="~/Master/Admin.Master" AutoEventWireup="true" CodeBehind="ManageUser.aspx.cs" Inherits="GrowWealth.Pages.Admin.ManageUser" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
 <style>

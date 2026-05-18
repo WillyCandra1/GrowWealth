@@ -72,6 +72,7 @@
     <Content Include="Default.aspx" />
     <Content Include="Pages\Admin\AdminDashboard.aspx" />
     <Content Include="Pages\Admin\ManageCourse.aspx" />
+    <Content Include="Pages\Admin\ManageQuiz.aspx" />
     <Content Include="Pages\Admin\ManageUser.aspx" />
     <Content Include="Pages\Member\CoursePage.aspx" />
     <Content Include="Pages\Member\ModuleViewer.aspx" />
@@ -97,6 +98,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Master\Admin.Master.cs">
+      <DependentUpon>Admin.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Master\Admin.Master.designer.cs">
+      <DependentUpon>Admin.Master</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Admin\AdminDashboard.aspx.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -110,6 +118,13 @@
     </Compile>
     <Compile Include="Pages\Admin\ManageCourse.aspx.designer.cs">
       <DependentUpon>ManageCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageQuiz.aspx.cs">
+      <DependentUpon>ManageQuiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageQuiz.aspx.designer.cs">
+      <DependentUpon>ManageQuiz.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Admin\ManageUser.aspx.cs">
       <DependentUpon>ManageUser.aspx</DependentUpon>
@@ -159,6 +174,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Master\Admin.Master" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
