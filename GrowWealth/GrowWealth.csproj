@@ -43,6 +43,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -62,17 +65,17 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Assets\css\style.css" />
     <Content Include="Database\GrowWealthDB.sql" />
     <Content Include="Master\before_landing.Master" />
     <Content Include="Master\after_landing.Master" />
     <Content Include="Default.aspx" />
-    <Content Include="Pages\Admin\ManageQuiz.aspx" />
+    <Content Include="Pages\Admin\AdminDashboard.aspx" />
+    <Content Include="Pages\Admin\ManageCourse.aspx" />
+    <Content Include="Pages\Admin\ManageUser.aspx" />
+    <Content Include="Pages\Member\CoursePage.aspx" />
+    <Content Include="Pages\Member\ModuleViewer.aspx" />
+    <Content Include="Pages\Member\VirtualLab.aspx" />
     <Content Include="Pages\Public\Login.aspx" />
     <Content Include="Pages\Public\Register.aspx" />
     <Content Include="Global.asax" />
@@ -94,12 +97,47 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Admin\ManageQuiz.aspx.cs">
-      <DependentUpon>ManageQuiz.aspx</DependentUpon>
+    <Compile Include="Pages\Admin\AdminDashboard.aspx.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\Admin\ManageQuiz.aspx.designer.cs">
-      <DependentUpon>ManageQuiz.aspx</DependentUpon>
+    <Compile Include="Pages\Admin\AdminDashboard.aspx.designer.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageCourse.aspx.cs">
+      <DependentUpon>ManageCourse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageCourse.aspx.designer.cs">
+      <DependentUpon>ManageCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageUser.aspx.cs">
+      <DependentUpon>ManageUser.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\ManageUser.aspx.designer.cs">
+      <DependentUpon>ManageUser.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\CoursePage.aspx.cs">
+      <DependentUpon>CoursePage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\CoursePage.aspx.designer.cs">
+      <DependentUpon>CoursePage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\ModuleViewer.aspx.cs">
+      <DependentUpon>ModuleViewer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\ModuleViewer.aspx.designer.cs">
+      <DependentUpon>ModuleViewer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\VirtualLab.aspx.cs">
+      <DependentUpon>VirtualLab.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\VirtualLab.aspx.designer.cs">
+      <DependentUpon>VirtualLab.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Public\Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
@@ -134,7 +172,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Assets\images\" />
     <Folder Include="Assets\js\" />
-    <Folder Include="Pages\Member\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

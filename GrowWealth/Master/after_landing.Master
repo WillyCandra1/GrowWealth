@@ -36,11 +36,17 @@
             <!-- Left Sidebar -->
             <aside class="sidebar">
                 <ul class="sidebar-nav">
-                    <li><a href="~/Default.aspx" runat="server" class="active">Dashboard</a></li>
+                    <li><a href="~/Default.aspx" runat="server">Dashboard</a></li>
                     <li><a href="#">Courses</a></li>
                     <li><a href="#">Virtual Lab</a></li>
                     <li><a href="#">Profile</a></li>
                 </ul>
+                <asp:Panel ID="pnlAdminLinks" runat="server" Visible="false">
+                    <ul class="sidebar-nav" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem;">
+                        <li><a href="~/Pages/Admin/ManageCourse.aspx" runat="server">Manage Courses</a></li>
+                        <li><a href="~/Pages/Admin/ManageUser.aspx" runat="server">Manage Users</a></li>
+                    </ul>
+                </asp:Panel>
             </aside>
 
             <!-- Main Content Area -->
