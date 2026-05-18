@@ -1,4 +1,4 @@
-<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="after_landing.Master.cs" Inherits="GrowWealth.after_landing" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="after_landing.Master.cs" Inherits="GrowWealth.after_landing" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,39 +12,50 @@
 </head>
 <body style="min-height: 100vh; margin: 0; display: flex; flex-direction: column;">
     <form runat="server" id="form1" style="flex: 1; display: flex; flex-direction: column;">
+
         <!-- Top Navbar for Logged In User -->
         <header class="topbar">
             <a href="~/Default.aspx" runat="server" class="navbar-brand">Grow Wealth</a>
-            
+
             <div class="navbar-actions">
-                <asp:LoginView runat="server" ViewStateMode="Disabled">
-                    <AnonymousTemplate>
-                        <a href="~/Pages/Public/Login.aspx" runat="server" class="btn btn-primary">Login</a>
-                    </AnonymousTemplate>
-                    <LoggedInTemplate>
-                        <span style="margin-right: 1rem; color: var(--text-secondary); font-weight: 500;">
-                            <%: Context.User.Identity.Name ?? "Ahmad Zaki" %> <!-- Fallback to demo identity if null -->
-                        </span>
-                        <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Logout" LogoutPageUrl="~/" CssClass="btn btn-outline" />
-                    </LoggedInTemplate>
-                </asp:LoginView>
+                <span style="margin-right: 1rem; color: var(--text-secondary); font-weight: 500;">
+                    <asp:Literal ID="litUserName" runat="server"></asp:Literal>
+                </span>
+                <asp:LoginStatus ID="lsLogout" runat="server" LogoutAction="Redirect" LogoutText="Logout"
+                    LogoutPageUrl="~/Default.aspx" CssClass="btn btn-outline" />
             </div>
         </header>
 
         <!-- Sidebar Layout -->
         <div class="dashboard-wrapper">
+
             <!-- Left Sidebar -->
             <aside class="sidebar">
                 <ul class="sidebar-nav">
-                    <li><a href="~/Default.aspx" runat="server">Dashboard</a></li>
-                    <li><a href="#">Courses</a></li>
-                    <li><a href="#">Virtual Lab</a></li>
-                    <li><a href="#">Profile</a></li>
+                    <li>
+                        <asp:HyperLink ID="lnkDashboard" runat="server"
+                            NavigateUrl="~/Pages/Member/Dashboard.aspx">Dashboard</asp:HyperLink>
+                    </li>
+                    <li>
+                        <asp:HyperLink ID="lnkCourses" runat="server"
+                            NavigateUrl="~/Pages/Member/CoursePage.aspx">Courses</asp:HyperLink>
+                    </li>
+                    <li>
+                        <asp:HyperLink ID="lnkVirtualLab" runat="server"
+                            NavigateUrl="~/Pages/Member/VirtualLab.aspx">Virtual Lab</asp:HyperLink>
+                    </li>
+                    <li>
+                        <asp:HyperLink ID="lnkProfile" runat="server"
+                            NavigateUrl="~/Pages/Member/Profile.aspx">Profile</asp:HyperLink>
+                    </li>
                 </ul>
+
                 <asp:Panel ID="pnlAdminLinks" runat="server" Visible="false">
-                    <ul class="sidebar-nav" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem;">
+                    <ul class="sidebar-nav" style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                        <li><a href="~/Pages/Admin/AdminDashboard.aspx" runat="server">Admin Panel</a></li>
                         <li><a href="~/Pages/Admin/ManageCourse.aspx" runat="server">Manage Courses</a></li>
                         <li><a href="~/Pages/Admin/ManageUser.aspx" runat="server">Manage Users</a></li>
+                        <li><a href="~/Pages/Admin/ManageQuiz.aspx" runat="server">Manage Quiz</a></li>
                     </ul>
                 </asp:Panel>
             </aside>
