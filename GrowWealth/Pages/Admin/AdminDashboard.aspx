@@ -1,122 +1,257 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminDashboard.aspx.cs" Inherits="GrowWealth.Pages.Admin.AdminDashboard" %>
+﻿<%@ Page Title="Admin Dashboard" Language="C#" MasterPageFile="~/Master/Admin.Master" AutoEventWireup="true" CodeBehind="AdminDashboard.aspx.cs" Inherits="GrowWealth.Pages.Admin.AdminDashboard" %>
 
-<!DOCTYPE html>
-<html>
-<head runat="server">
-    <title>Admin Dashboard - Grow Wealth</title>
-    <link href="../../Assets/css/style.css" rel="stylesheet" />
-</head>
-<body>
-    <form id="form1" runat="server">
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
 
-        <nav class="navbar">
-            <div class="container">
-                <a class="navbar-brand" href="../../Default.aspx">Grow Wealth</a>
+    <style>
+        .gw-admin-dashboard {
+            display: block !important;
+            width: 100% !important;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 35px 35px 60px 35px;
+            box-sizing: border-box;
+        }
 
-                <div class="navbar-actions">
-                    <span class="muted">Admin</span>
-                    <a href="../Public/Login.aspx" class="btn btn-outline">Logout</a>
-                </div>
-            </div>
-        </nav>
+        .gw-dashboard-header {
+            display: block !important;
+            margin-bottom: 28px;
+        }
 
-        <div class="app-layout">
+        .gw-dashboard-header h1 {
+            font-size: 38px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #111827;
+            line-height: 1.2;
+        }
 
-            <aside class="side-menu">
-                <a href="AdminDashboard.aspx" class="active">Dashboard</a>
-                <a href="ManageCourse.aspx">Manage courses</a>
-                <a href="ManageUser.aspx">Manage users</a>
-                <a href="ManageQuiz.aspx">Manage quiz</a>
-            </aside>
+        .gw-dashboard-header p {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0;
+        }
 
-            <main class="page-area">
+        .gw-dashboard-message {
+            display: block;
+            color: #dc2626;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
 
-                <div class="page-header">
-                    <h1>Admin dashboard</h1>
-                    <p>Quick overview of users, courses, modules and quiz activity.</p>
-                </div>
+        .gw-stats-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
 
-                <asp:Label ID="lblMessage" runat="server" CssClass="text-danger"></asp:Label>
+        .gw-stat-card {
+            display: block !important;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            min-height: 120px;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+            box-sizing: border-box;
+        }
 
-                <div class="admin-stats">
-                    <div class="card">
-                        <div class="card-body stat-box">
-                            <h2><asp:Label ID="lblUsers" runat="server" Text="0"></asp:Label></h2>
-                            <p>Registered users</p>
-                        </div>
-                    </div>
+        .gw-stat-card h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #111827;
+            line-height: 1;
+        }
 
-                    <div class="card">
-                        <div class="card-body stat-box">
-                            <h2><asp:Label ID="lblCourses" runat="server" Text="0"></asp:Label></h2>
-                            <p>Active courses</p>
-                        </div>
-                    </div>
+        .gw-stat-card p {
+            font-size: 15px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.4;
+        }
 
-                    <div class="card">
-                        <div class="card-body stat-box">
-                            <h2><asp:Label ID="lblModules" runat="server" Text="0"></asp:Label></h2>
-                            <p>Published modules</p>
-                        </div>
-                    </div>
+        .gw-content-grid {
+            display: grid !important;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 22px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
 
-                    <div class="card">
-                        <div class="card-body stat-box">
-                            <h2><asp:Label ID="lblQuizAttempts" runat="server" Text="0"></asp:Label></h2>
-                            <p>Total quiz attempts</p>
-                        </div>
-                    </div>
-                </div>
+        .gw-panel {
+            display: block !important;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
 
-                <br />
+        .gw-panel h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 18px 0;
+        }
 
-                <div class="two-column">
+        .gw-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
 
-                    <section class="card">
-                        <div class="card-body">
-                            <h2>Recent users</h2>
+        .gw-table th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+            padding: 13px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            white-space: nowrap;
+        }
 
-                            <asp:GridView ID="gvUsers" runat="server" AutoGenerateColumns="False" CssClass="simple-table" GridLines="None">
-                                <Columns>
-                                    <asp:BoundField DataField="FullName" HeaderText="Name" />
-                                    <asp:BoundField DataField="Email" HeaderText="Email" />
-                                    <asp:BoundField DataField="Role" HeaderText="Role" />
-                                    <asp:BoundField DataField="CreatedAt" HeaderText="Joined" DataFormatString="{0:dd MMM yyyy}" />
-                                </Columns>
-                            </asp:GridView>
-                        </div>
-                    </section>
+        .gw-table td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+            vertical-align: middle;
+        }
 
-                    <section class="card">
-                        <div class="card-body">
-                            <h2>Course summary</h2>
+        .gw-table tr:hover td {
+            background: #f9fafb;
+        }
 
-                            <asp:GridView ID="gvCourses" runat="server" AutoGenerateColumns="False" CssClass="simple-table" GridLines="None">
-                                <Columns>
-                                    <asp:BoundField DataField="Title" HeaderText="Course title" />
-                                    <asp:BoundField DataField="DifficultyLevel" HeaderText="Level" />
-                                    <asp:BoundField DataField="Status" HeaderText="Status" />
-                                </Columns>
-                            </asp:GridView>
-                        </div>
-                    </section>
+        .gw-shortcuts {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
 
-                </div>
+        .gw-btn {
+            display: inline-block !important;
+            padding: 12px 18px;
+            background: #111827;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-                <br />
+        .gw-btn:hover {
+            background: #374151;
+        }
 
-                <section class="card">
-                    <div class="card-body">
-                        <h2>Admin shortcuts</h2>
+        @media (max-width: 1100px) {
+            .gw-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
 
-                        <a href="ManageCourse.aspx" class="btn btn-primary">Manage courses</a>
-                        <a href="ManageUser.aspx" class="btn btn-outline">Manage users</a>
-                    </div>
-                </section>
+            .gw-content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
-            </main>
+        @media (max-width: 650px) {
+            .gw-admin-dashboard {
+                padding: 25px 18px 50px 18px;
+            }
+
+            .gw-stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gw-dashboard-header h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+
+    <div class="gw-admin-dashboard">
+
+        <div class="gw-dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <p>Overview of users, roles, and investment simulation activity.</p>
         </div>
 
-    </form>
-</body>
-</html>
+        <asp:Label ID="lblMessage" runat="server" CssClass="gw-dashboard-message"></asp:Label>
+
+        <div class="gw-stats-grid">
+
+            <div class="gw-stat-card">
+                <h2>
+                    <asp:Label ID="lblUsers" runat="server" Text="0"></asp:Label>
+                </h2>
+                <p>Registered Users</p>
+            </div>
+
+            <div class="gw-stat-card">
+                <h2>
+                    <asp:Label ID="lblRoles" runat="server" Text="0"></asp:Label>
+                </h2>
+                <p>User Roles</p>
+            </div>
+
+            <div class="gw-stat-card">
+                <h2>
+                    <asp:Label ID="lblSimulations" runat="server" Text="0"></asp:Label>
+                </h2>
+                <p>Investment Simulations</p>
+            </div>
+
+            <div class="gw-stat-card">
+                <h2>
+                    <asp:Label ID="lblAdmins" runat="server" Text="0"></asp:Label>
+                </h2>
+                <p>Admin Accounts</p>
+            </div>
+
+        </div>
+
+        <div class="gw-content-grid">
+
+            <div class="gw-panel">
+                <h2>Recent Users</h2>
+
+                <asp:GridView 
+                    ID="gvUsers" 
+                    runat="server" 
+                    AutoGenerateColumns="true" 
+                    CssClass="gw-table"
+                    GridLines="None"
+                    EmptyDataText="No users found.">
+                </asp:GridView>
+            </div>
+
+            <div class="gw-panel">
+                <h2>Recent Investment Simulations</h2>
+
+                <asp:GridView 
+                    ID="gvSimulations" 
+                    runat="server" 
+                    AutoGenerateColumns="true" 
+                    CssClass="gw-table"
+                    GridLines="None"
+                    EmptyDataText="No investment simulations found.">
+                </asp:GridView>
+            </div>
+
+        </div>
+
+        <div class="gw-panel">
+            <h2>Admin Shortcuts</h2>
+
+            <div class="gw-shortcuts">
+                <a href="ManageUser.aspx" class="gw-btn">Manage Users</a>
+                <a href="ManageQuiz.aspx" class="gw-btn">Manage Quiz</a>
+                <a href="ManageCourse.aspx" class="gw-btn">Manage Courses</a>
+            </div>
+        </div>
+
+    </div>
+
+</asp:Content>

@@ -7,7 +7,7 @@ namespace GrowWealth.Pages.Admin
 {
     public partial class AdminDashboard : System.Web.UI.Page
     {
-        string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+        private readonly string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -15,7 +15,7 @@ namespace GrowWealth.Pages.Admin
             {
                 LoadDashboardNumbers();
                 LoadRecentUsers();
-                LoadCourses();
+                LoadRecentSimulations();
             }
         }
 
@@ -28,35 +28,34 @@ namespace GrowWealth.Pages.Admin
                     conn.Open();
 
                     lblUsers.Text = GetCount(conn, "SELECT COUNT(*) FROM [User]").ToString();
-                    lblCourses.Text = GetCount(conn, "SELECT COUNT(*) FROM Course WHERE Status = 'Active'").ToString();
-                    lblModules.Text = GetCount(conn, "SELECT COUNT(*) FROM Module").ToString();
+                    lblRoles.Text = GetCount(conn, "SELECT COUNT(*) FROM [Role]").ToString();
+                    lblSimulations.Text = GetCount(conn, "SELECT COUNT(*) FROM InvestmentSimulation").ToString();
 
-                    // If QuizAttempt table does not exist yet, this will be handled safely.
-                    lblQuizAttempts.Text = GetCountSafe(conn, "SELECT COUNT(*) FROM Quiz_Attempt").ToString();
+                    lblAdmins.Text = GetCount(conn,
+                        "SELECT COUNT(*) " +
+                        "FROM [User] U " +
+                        "INNER JOIN [Role] R ON U.RoleID = R.RoleID " +
+                        "WHERE R.RoleName = 'Admin'").ToString();
                 }
             }
             catch (Exception ex)
             {
-                lblMessage.Text = "Dashboard data cannot be loaded yet. " + ex.Message;
+                lblMessage.Text = "Dashboard data cannot be loaded. " + ex.Message;
             }
         }
 
         private int GetCount(SqlConnection conn, string sql)
         {
-            SqlCommand cmd = new SqlCommand(sql, conn);
-            return Convert.ToInt32(cmd.ExecuteScalar());
-        }
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
+            {
+                object result = cmd.ExecuteScalar();
 
-        private int GetCountSafe(SqlConnection conn, string sql)
-        {
-            try
-            {
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                return Convert.ToInt32(cmd.ExecuteScalar());
-            }
-            catch
-            {
-                return 0;
+                if (result == null || result == DBNull.Value)
+                {
+                    return 0;
+                }
+
+                return Convert.ToInt32(result);
             }
         }
 
@@ -66,9 +65,15 @@ namespace GrowWealth.Pages.Admin
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = "SELECT TOP 5 FullName, Email, Role, CreatedAt " +
-                                 "FROM [User] " +
-                                 "ORDER BY CreatedAt DESC";
+                    string sql =
+                        "SELECT TOP 5 " +
+                        "U.UserID AS [User ID], " +
+                        "U.FullName AS [Full Name], " +
+                        "U.Email AS [Email], " +
+                        "R.RoleName AS [Role] " +
+                        "FROM [User] U " +
+                        "LEFT JOIN [Role] R ON U.RoleID = R.RoleID " +
+                        "ORDER BY U.UserID DESC";
 
                     SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                     DataTable dt = new DataTable();
@@ -78,33 +83,35 @@ namespace GrowWealth.Pages.Admin
                     gvUsers.DataBind();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Keep page working even if user table columns are different.
+                lblMessage.Text = "Recent users cannot be loaded. " + ex.Message;
             }
         }
 
-        private void LoadCourses()
+        private void LoadRecentSimulations()
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    string sql = "SELECT TOP 5 Title, DifficultyLevel, Status " +
-                                 "FROM Course " +
-                                 "ORDER BY CourseID DESC";
+                    string sql =
+                        "SELECT TOP 5 * " +
+                        "FROM InvestmentSimulation " +
+                        "ORDER BY 1 DESC";
 
                     SqlDataAdapter da = new SqlDataAdapter(sql, conn);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 
-                    gvCourses.DataSource = dt;
-                    gvCourses.DataBind();
+                    gvSimulations.DataSource = dt;
+                    gvSimulations.DataBind();
                 }
             }
             catch
             {
-                // Keep page working even if course table is empty.
+                gvSimulations.DataSource = null;
+                gvSimulations.DataBind();
             }
         }
     }

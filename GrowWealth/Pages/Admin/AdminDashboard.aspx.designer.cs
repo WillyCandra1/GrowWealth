@@ -15,15 +15,6 @@ namespace GrowWealth.Pages.Admin
     {
 
         /// <summary>
-        /// form1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
-        /// <summary>
         /// lblMessage control.
         /// </summary>
         /// <remarks>
@@ -42,31 +33,31 @@ namespace GrowWealth.Pages.Admin
         protected global::System.Web.UI.WebControls.Label lblUsers;
 
         /// <summary>
-        /// lblCourses control.
+        /// lblRoles control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCourses;
+        protected global::System.Web.UI.WebControls.Label lblRoles;
 
         /// <summary>
-        /// lblModules control.
+        /// lblSimulations control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblModules;
+        protected global::System.Web.UI.WebControls.Label lblSimulations;
 
         /// <summary>
-        /// lblQuizAttempts control.
+        /// lblAdmins control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblQuizAttempts;
+        protected global::System.Web.UI.WebControls.Label lblAdmins;
 
         /// <summary>
         /// gvUsers control.
@@ -78,12 +69,12 @@ namespace GrowWealth.Pages.Admin
         protected global::System.Web.UI.WebControls.GridView gvUsers;
 
         /// <summary>
-        /// gvCourses control.
+        /// gvSimulations control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvCourses;
+        protected global::System.Web.UI.WebControls.GridView gvSimulations;
     }
 }
