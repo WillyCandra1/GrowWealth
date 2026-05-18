@@ -149,3 +149,25 @@ VALUES (2, 'Ahmad Zaki', 'ahmad@email.com', 'password123', 'University Student',
 
 INSERT INTO [User] (RoleID, FullName, Email, PasswordHash, UserProfession, AccountStatus) 
 VALUES (2, 'Sarah Jenkins', 'sarah@email.com', 'password123', 'Young Professional', 'Active');
+
+-- Investment simulation history for Virtual Lab
+IF OBJECT_ID('InvestmentSimulation', 'U') IS NULL
+BEGIN
+    CREATE TABLE InvestmentSimulation (
+        SimulationID INT IDENTITY(1,1) PRIMARY KEY,
+        UserID INT NULL,
+        InitialAmount DECIMAL(18,2) NOT NULL,
+        MonthlyContribution DECIMAL(18,2) NOT NULL,
+        AnnualRate DECIMAL(5,2) NOT NULL,
+        DurationYears INT NOT NULL,
+        TotalInvested DECIMAL(18,2) NOT NULL,
+        ProjectedValue DECIMAL(18,2) NOT NULL,
+        InterestEarned DECIMAL(18,2) NOT NULL,
+        ROI DECIMAL(10,2) NOT NULL,
+        CreatedAt DATETIME2 DEFAULT GETDATE(),
+
+        CONSTRAINT FK_InvestmentSimulation_User
+        FOREIGN KEY (UserID) REFERENCES [User](UserID)
+        ON DELETE SET NULL
+    );
+END

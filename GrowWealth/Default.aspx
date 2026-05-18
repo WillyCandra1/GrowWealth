@@ -12,9 +12,11 @@
                 <h1>Grow your wealth,<br />one module at a time</h1>
                 <p>Interactive courses on budgeting, investing, and risk management<br />for students and young professionals.</p>
                 <div class="hero-actions">
-                    <a href="Register.aspx" class="btn btn-primary">Get started free</a>
-                    <a href="#" class="btn btn-outline">Browse courses</a>
-                </div>
+                    <a href="Pages/Public/Register.aspx" class="btn btn-primary">Get started free</a>
+                    <a href="Pages/Member/CoursePage.aspx" class="btn btn-outline">Browse courses</a>
+                    <a href="Pages/Member/VirtualLab.aspx" class="btn btn-outline">Virtual Lab</a>
+                    <a href="Pages/Admin/AdminDashboard.aspx" class="btn btn-outline">Admin Demo</a>
+                </div>  
             </section>
         </asp:PlaceHolder>
 

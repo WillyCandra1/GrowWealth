@@ -70,8 +70,12 @@
     <Content Include="Master\before_landing.Master" />
     <Content Include="Master\after_landing.Master" />
     <Content Include="Default.aspx" />
+    <Content Include="Pages\Admin\AdminDashboard.aspx" />
     <Content Include="Pages\Admin\ManageCourse.aspx" />
     <Content Include="Pages\Admin\ManageUser.aspx" />
+    <Content Include="Pages\Member\CoursePage.aspx" />
+    <Content Include="Pages\Member\ModuleViewer.aspx" />
+    <Content Include="Pages\Member\VirtualLab.aspx" />
     <Content Include="Pages\Public\Login.aspx" />
     <Content Include="Pages\Public\Register.aspx" />
     <Content Include="Global.asax" />
@@ -93,6 +97,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Admin\AdminDashboard.aspx.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Admin\AdminDashboard.aspx.designer.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Admin\ManageCourse.aspx.cs">
       <DependentUpon>ManageCourse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -106,6 +117,27 @@
     </Compile>
     <Compile Include="Pages\Admin\ManageUser.aspx.designer.cs">
       <DependentUpon>ManageUser.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\CoursePage.aspx.cs">
+      <DependentUpon>CoursePage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\CoursePage.aspx.designer.cs">
+      <DependentUpon>CoursePage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\ModuleViewer.aspx.cs">
+      <DependentUpon>ModuleViewer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\ModuleViewer.aspx.designer.cs">
+      <DependentUpon>ModuleViewer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Member\VirtualLab.aspx.cs">
+      <DependentUpon>VirtualLab.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\VirtualLab.aspx.designer.cs">
+      <DependentUpon>VirtualLab.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Public\Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
@@ -140,7 +172,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Assets\images\" />
     <Folder Include="Assets\js\" />
-    <Folder Include="Pages\Member\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
