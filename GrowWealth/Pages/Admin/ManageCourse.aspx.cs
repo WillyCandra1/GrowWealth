@@ -1,8 +1,7 @@
 ﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Configuration;
-using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -10,212 +9,450 @@ namespace GrowWealth.Pages.Admin
 {
     public partial class ManageCourse : Page
     {
-        string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // check if user is logged in
-            if (!Request.IsAuthenticated)
-            {
-                FormsAuthentication.RedirectToLoginPage();
-                return;
-            }
-
-            // only admin can access this page
-            if (!CheckIfAdmin())
-            {
-                Response.Redirect("~/Default.aspx");
-                return;
-            }
-
             if (!IsPostBack)
             {
-                LoadStats();
-                LoadCourses("", "");
-            }
-        }
-
-        bool CheckIfAdmin()
-        {
-            bool isAdmin = false;
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                SqlCommand cmd = new SqlCommand("SELECT RoleID FROM [User] WHERE FullName = @Name AND AccountStatus = 'Active'", conn);
-                cmd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
-                conn.Open();
-                object result = cmd.ExecuteScalar();
-                if (result != null && Convert.ToInt32(result) == 1)
+                LoadCourses();
+                int courseId;
+                if (int.TryParse(Request.QueryString["expand"], out courseId))
                 {
-                    isAdmin = true;
-                }
-            }
-            return isAdmin;
-        }
-
-        void LoadStats()
-        {
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                string sql = "SELECT COUNT(*) AS Total, " +
-                             "SUM(CASE WHEN Status = 'Published' THEN 1 ELSE 0 END) AS Published, " +
-                             "SUM(CASE WHEN Status = 'Draft' THEN 1 ELSE 0 END) AS Draft, " +
-                             "SUM(CASE WHEN Status = 'Archived' THEN 1 ELSE 0 END) AS Archived " +
-                             "FROM Course";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                conn.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
-                {
-                    lbl_TotalCount.Text = dr["Total"].ToString();
-                    lbl_PublishedCount.Text = dr["Published"].ToString();
-                    lbl_DraftCount.Text = dr["Draft"].ToString();
-                    lbl_ArchivedCount.Text = dr["Archived"].ToString();
+                    ShowModulesPanel(courseId);
                 }
             }
         }
 
-        void LoadCourses(string search, string status)
+        private void LoadCourses()
         {
+            string sql = @"
+                SELECT
+                    c.CourseID, c.Title, c.Description, c.Difficulty, c.EstimatedHours, c.IsActive,
+                    (SELECT COUNT(*) FROM Module WHERE CourseID = c.CourseID) AS ModuleCount,
+                    (SELECT COUNT(*) FROM Enrollment WHERE CourseID = c.CourseID) AS EnrolCount
+                FROM Course c
+                ORDER BY c.CourseID";
+
+            DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "SELECT c.CourseID, c.Title, c.DifficultyLevel, c.Status, c.CreatedAt, " +
-                             "COUNT(e.EnrollmentID) AS EnrollCount " +
-                             "FROM Course c " +
-                             "LEFT JOIN Enrollment e ON c.CourseID = e.CourseID " +
-                             "WHERE (@Search = '' OR c.Title LIKE '%' + @Search + '%') " +
-                             "AND (@Status = '' OR c.Status = @Status) " +
-                             "GROUP BY c.CourseID, c.Title, c.DifficultyLevel, c.Status, c.CreatedAt " +
-                             "ORDER BY c.CreatedAt DESC";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Search", search);
-                cmd.Parameters.AddWithValue("@Status", status);
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                gv_Courses.DataSource = dt;
-                gv_Courses.DataBind();
+                new SqlDataAdapter(sql, conn).Fill(dt);
             }
+            rptCourses.DataSource = dt;
+            rptCourses.DataBind();
         }
 
-        protected void btn_Search_Click(object sender, EventArgs e)
+        protected void btnNewCourse_Click(object sender, EventArgs e)
         {
-            LoadCourses(txt_Search.Text.Trim(), ddl_StatusFilter.SelectedValue);
+            txtTitle.Text = "";
+            txtDescription.Text = "";
+            txtHours.Text = "6";
+            ddlDifficulty.SelectedValue = "Beginner";
+            chkActive.Checked = true;
+            ViewState["EditCourseID"] = null;
+            litCourseFormHeader.Text = "New course";
+            pnlCourseForm.Visible = true;
+            pnlModuleForm.Visible = false;
+            ClearAlerts();
         }
 
-        protected void gv_Courses_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected void btnSaveCourse_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+
+                if (ViewState["EditCourseID"] == null)
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        @"INSERT INTO Course (Title, Description, Difficulty, EstimatedHours, IsActive)
+                          VALUES (@Title, @Description, @Difficulty, @Hours, @Active)", conn);
+                    cmd.Parameters.AddWithValue("@Title", txtTitle.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Description", txtDescription.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Difficulty", ddlDifficulty.SelectedValue);
+                    cmd.Parameters.AddWithValue("@Hours", int.Parse(txtHours.Text));
+                    cmd.Parameters.AddWithValue("@Active", chkActive.Checked);
+                    cmd.ExecuteNonQuery();
+
+                    ShowSuccess("Course created successfully.");
+                }
+                else
+                {
+                    int courseId = Convert.ToInt32(ViewState["EditCourseID"]);
+                    SqlCommand cmd = new SqlCommand(
+                        @"UPDATE Course
+                          SET Title = @Title, Description = @Description, Difficulty = @Difficulty,
+                              EstimatedHours = @Hours, IsActive = @Active
+                          WHERE CourseID = @CourseID", conn);
+                    cmd.Parameters.AddWithValue("@Title", txtTitle.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Description", txtDescription.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Difficulty", ddlDifficulty.SelectedValue);
+                    cmd.Parameters.AddWithValue("@Hours", int.Parse(txtHours.Text));
+                    cmd.Parameters.AddWithValue("@Active", chkActive.Checked);
+                    cmd.Parameters.AddWithValue("@CourseID", courseId);
+                    cmd.ExecuteNonQuery();
+
+                    ShowSuccess("Course updated successfully.");
+                }
+            }
+
+            pnlCourseForm.Visible = false;
+            ViewState["EditCourseID"] = null;
+            LoadCourses();
+        }
+
+        protected void btnCancelCourse_Click(object sender, EventArgs e)
+        {
+            pnlCourseForm.Visible = false;
+            ViewState["EditCourseID"] = null;
+            ClearAlerts();
+        }
+
+        protected void rptCourses_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             int courseId = Convert.ToInt32(e.CommandArgument);
 
-            if (e.CommandName == "DeleteCourse")
+            if (e.CommandName == "EditCourse")
             {
                 using (SqlConnection conn = new SqlConnection(connStr))
                 {
-                    SqlCommand cmd = new SqlCommand("DELETE FROM Course WHERE CourseID = @ID", conn);
-                    cmd.Parameters.AddWithValue("@ID", courseId);
+                    SqlCommand cmd = new SqlCommand(
+                        "SELECT Title, Description, Difficulty, EstimatedHours, IsActive FROM Course WHERE CourseID = @CourseID", conn);
+                    cmd.Parameters.AddWithValue("@CourseID", courseId);
                     conn.Open();
-                    cmd.ExecuteNonQuery();
-                }
-                ShowMessage("Course deleted!", true);
-                LoadStats();
-                LoadCourses(txt_Search.Text.Trim(), ddl_StatusFilter.SelectedValue);
-            }
-            else if (e.CommandName == "EditCourse")
-            {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM Course WHERE CourseID = @ID", conn);
-                    cmd.Parameters.AddWithValue("@ID", courseId);
-                    conn.Open();
-                    SqlDataReader dr = cmd.ExecuteReader();
-                    if (dr.Read())
+                    using (SqlDataReader rd = cmd.ExecuteReader())
                     {
-                        hf_EditCourseID.Value = dr["CourseID"].ToString();
-                        txt_EditTitle.Text = dr["Title"].ToString();
-                        txt_EditDescription.Text = dr["Description"].ToString();
-                        txt_EditThumbnail.Text = dr["ThumbnailURL"].ToString();
-                        ddl_EditDifficulty.SelectedValue = dr["DifficultyLevel"].ToString();
-                        ddl_EditStatus.SelectedValue = dr["Status"].ToString();
+                        if (rd.Read())
+                        {
+                            txtTitle.Text = rd["Title"].ToString();
+                            txtDescription.Text = rd["Description"].ToString();
+                            ddlDifficulty.SelectedValue = rd["Difficulty"].ToString();
+                            txtHours.Text = rd["EstimatedHours"].ToString();
+                            chkActive.Checked = Convert.ToBoolean(rd["IsActive"]);
+                        }
                     }
                 }
-                hf_ShowEdit.Value = "1";
-                LoadCourses(txt_Search.Text.Trim(), ddl_StatusFilter.SelectedValue);
+                ViewState["EditCourseID"] = courseId;
+                litCourseFormHeader.Text = "Edit course";
+                pnlCourseForm.Visible = true;
+                pnlModuleForm.Visible = false;
+                ClearAlerts();
+            }
+            else if (e.CommandName == "ViewModules")
+            {
+                ShowModulesPanel(courseId);
+            }
+            else if (e.CommandName == "DeleteCourse")
+            {
+                DeleteCourse(courseId);
             }
         }
 
-        protected void btn_AddCourse_Click(object sender, EventArgs e)
+        private void ShowModulesPanel(int courseId)
         {
-            if (string.IsNullOrWhiteSpace(txt_Title.Text))
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                ShowMessage("Please enter a course title.", false);
-                return;
+                SqlCommand cmdName = new SqlCommand(
+                    "SELECT Title FROM Course WHERE CourseID = @CourseID", conn);
+                cmdName.Parameters.AddWithValue("@CourseID", courseId);
+                conn.Open();
+                object name = cmdName.ExecuteScalar();
+                if (name == null)
+                {
+                    ShowError("Course not found.");
+                    return;
+                }
+                litExpandedCourse.Text = Server.HtmlEncode(name.ToString());
             }
+
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT ModuleID, Title, OrderIndex, EstimatedMinutes FROM Module WHERE CourseID = @CourseID ORDER BY OrderIndex", conn);
+                cmd.Parameters.AddWithValue("@CourseID", courseId);
+                new SqlDataAdapter(cmd).Fill(dt);
+            }
+            rptModulesInCourse.DataSource = dt;
+            rptModulesInCourse.DataBind();
+
+            ViewState["ExpandedCourseID"] = courseId;
+            pnlModuleList.Visible = true;
+        }
+
+        private void DeleteCourse(int courseId)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                SqlTransaction tx = conn.BeginTransaction();
+                try
+                {
+                    SqlCommand c1 = new SqlCommand(
+                        @"DELETE FROM Quiz_Attempt
+                          WHERE QuizID IN (
+                              SELECT q.QuizID FROM Quiz q
+                              INNER JOIN Module m ON q.ModuleID = m.ModuleID
+                              WHERE m.CourseID = @CourseID)", conn, tx);
+                    c1.Parameters.AddWithValue("@CourseID", courseId);
+                    c1.ExecuteNonQuery();
+
+                    SqlCommand c2 = new SqlCommand(
+                        @"DELETE FROM Question
+                          WHERE QuizID IN (
+                              SELECT q.QuizID FROM Quiz q
+                              INNER JOIN Module m ON q.ModuleID = m.ModuleID
+                              WHERE m.CourseID = @CourseID)", conn, tx);
+                    c2.Parameters.AddWithValue("@CourseID", courseId);
+                    c2.ExecuteNonQuery();
+
+                    SqlCommand c3 = new SqlCommand(
+                        @"DELETE FROM Quiz
+                          WHERE ModuleID IN (SELECT ModuleID FROM Module WHERE CourseID = @CourseID)", conn, tx);
+                    c3.Parameters.AddWithValue("@CourseID", courseId);
+                    c3.ExecuteNonQuery();
+
+                    SqlCommand c4 = new SqlCommand(
+                        @"DELETE FROM UserProgress
+                          WHERE ModuleID IN (SELECT ModuleID FROM Module WHERE CourseID = @CourseID)", conn, tx);
+                    c4.Parameters.AddWithValue("@CourseID", courseId);
+                    c4.ExecuteNonQuery();
+
+                    SqlCommand c5 = new SqlCommand(
+                        "DELETE FROM Module WHERE CourseID = @CourseID", conn, tx);
+                    c5.Parameters.AddWithValue("@CourseID", courseId);
+                    c5.ExecuteNonQuery();
+
+                    SqlCommand c6 = new SqlCommand(
+                        "DELETE FROM Enrollment WHERE CourseID = @CourseID", conn, tx);
+                    c6.Parameters.AddWithValue("@CourseID", courseId);
+                    c6.ExecuteNonQuery();
+
+                    SqlCommand c7 = new SqlCommand(
+                        "DELETE FROM Course WHERE CourseID = @CourseID", conn, tx);
+                    c7.Parameters.AddWithValue("@CourseID", courseId);
+                    c7.ExecuteNonQuery();
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    ShowError("Could not delete course.");
+                    return;
+                }
+            }
+
+            pnlModuleList.Visible = false;
+            ShowSuccess("Course deleted successfully.");
+            LoadCourses();
+        }
+
+        protected void btnNewModule_Click(object sender, EventArgs e)
+        {
+            if (ViewState["ExpandedCourseID"] == null) return;
+
+            int courseId = Convert.ToInt32(ViewState["ExpandedCourseID"]);
+            txtModuleTitle.Text = "";
+            txtModuleContent.Text = "";
+            txtModuleMinutes.Text = "15";
+
+            int nextOrder = 1;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT ISNULL(MAX(OrderIndex), 0) + 1 FROM Module WHERE CourseID = @CourseID", conn);
+                cmd.Parameters.AddWithValue("@CourseID", courseId);
+                conn.Open();
+                nextOrder = Convert.ToInt32(cmd.ExecuteScalar());
+
+                SqlCommand cmdName = new SqlCommand(
+                    "SELECT Title FROM Course WHERE CourseID = @CourseID", conn);
+                cmdName.Parameters.AddWithValue("@CourseID", courseId);
+                litModuleCourseName.Text = Server.HtmlEncode(cmdName.ExecuteScalar().ToString());
+            }
+            txtModuleOrder.Text = nextOrder.ToString();
+
+            ViewState["EditModuleID"] = null;
+            litModuleFormHeader.Text = "New module";
+            pnlModuleForm.Visible = true;
+            pnlCourseForm.Visible = false;
+            ClearAlerts();
+        }
+
+        protected void btnSaveModule_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+            if (ViewState["ExpandedCourseID"] == null) return;
+
+            int courseId = Convert.ToInt32(ViewState["ExpandedCourseID"]);
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "INSERT INTO Course (Title, Description, DifficultyLevel, ThumbnailURL, Status) " +
-                             "VALUES (@Title, @Desc, @Diff, @Thumb, @Status)";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Title", txt_Title.Text.Trim());
-                cmd.Parameters.AddWithValue("@Desc", txt_Description.Text.Trim());
-                cmd.Parameters.AddWithValue("@Diff", ddl_Difficulty.SelectedValue);
-                cmd.Parameters.AddWithValue("@Thumb", txt_Thumbnail.Text.Trim());
-                cmd.Parameters.AddWithValue("@Status", ddl_Status.SelectedValue);
                 conn.Open();
-                cmd.ExecuteNonQuery();
+
+                if (ViewState["EditModuleID"] == null)
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        @"INSERT INTO Module (CourseID, Title, Content, OrderIndex, EstimatedMinutes)
+                          VALUES (@CourseID, @Title, @Content, @Order, @Min)", conn);
+                    cmd.Parameters.AddWithValue("@CourseID", courseId);
+                    cmd.Parameters.AddWithValue("@Title", txtModuleTitle.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Content", txtModuleContent.Text);
+                    cmd.Parameters.AddWithValue("@Order", int.Parse(txtModuleOrder.Text));
+                    cmd.Parameters.AddWithValue("@Min", int.Parse(txtModuleMinutes.Text));
+                    cmd.ExecuteNonQuery();
+                    ShowSuccess("Module created successfully.");
+                }
+                else
+                {
+                    int moduleId = Convert.ToInt32(ViewState["EditModuleID"]);
+                    SqlCommand cmd = new SqlCommand(
+                        @"UPDATE Module
+                          SET Title = @Title, Content = @Content, OrderIndex = @Order, EstimatedMinutes = @Min
+                          WHERE ModuleID = @ModuleID", conn);
+                    cmd.Parameters.AddWithValue("@Title", txtModuleTitle.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Content", txtModuleContent.Text);
+                    cmd.Parameters.AddWithValue("@Order", int.Parse(txtModuleOrder.Text));
+                    cmd.Parameters.AddWithValue("@Min", int.Parse(txtModuleMinutes.Text));
+                    cmd.Parameters.AddWithValue("@ModuleID", moduleId);
+                    cmd.ExecuteNonQuery();
+                    ShowSuccess("Module updated successfully.");
+                }
             }
 
-            // clear the form
-            txt_Title.Text = "";
-            txt_Description.Text = "";
-            txt_Thumbnail.Text = "";
-
-            ShowMessage("Course added successfully!", true);
-            LoadStats();
-            LoadCourses("", "");
+            pnlModuleForm.Visible = false;
+            ViewState["EditModuleID"] = null;
+            ShowModulesPanel(courseId);
         }
 
-        protected void btn_UpdateCourse_Click(object sender, EventArgs e)
+        protected void btnCancelModule_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txt_EditTitle.Text))
-            {
-                ShowMessage("Course title cannot be empty.", false);
-                hf_ShowEdit.Value = "1";
-                return;
-            }
+            pnlModuleForm.Visible = false;
+            ViewState["EditModuleID"] = null;
+            ClearAlerts();
+        }
 
+        protected void rptModulesInCourse_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            int moduleId = Convert.ToInt32(e.CommandArgument);
+
+            if (e.CommandName == "EditModule")
+            {
+                int courseId = 0;
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        "SELECT CourseID, Title, Content, OrderIndex, EstimatedMinutes FROM Module WHERE ModuleID = @ModuleID", conn);
+                    cmd.Parameters.AddWithValue("@ModuleID", moduleId);
+                    conn.Open();
+                    using (SqlDataReader rd = cmd.ExecuteReader())
+                    {
+                        if (rd.Read())
+                        {
+                            courseId = Convert.ToInt32(rd["CourseID"]);
+                            txtModuleTitle.Text = rd["Title"].ToString();
+                            txtModuleContent.Text = rd["Content"].ToString();
+                            txtModuleOrder.Text = rd["OrderIndex"].ToString();
+                            txtModuleMinutes.Text = rd["EstimatedMinutes"].ToString();
+                        }
+                    }
+
+                    SqlCommand cmdName = new SqlCommand(
+                        "SELECT Title FROM Course WHERE CourseID = @CourseID", conn);
+                    cmdName.Parameters.AddWithValue("@CourseID", courseId);
+                    litModuleCourseName.Text = Server.HtmlEncode(cmdName.ExecuteScalar().ToString());
+                }
+
+                ViewState["EditModuleID"] = moduleId;
+                ViewState["ExpandedCourseID"] = courseId;
+                litModuleFormHeader.Text = "Edit module";
+                pnlModuleForm.Visible = true;
+                pnlCourseForm.Visible = false;
+                ClearAlerts();
+            }
+            else if (e.CommandName == "DeleteModule")
+            {
+                DeleteModule(moduleId);
+            }
+        }
+
+        private void DeleteModule(int moduleId)
+        {
+            int courseId = 0;
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "UPDATE Course SET Title = @Title, Description = @Desc, " +
-                             "DifficultyLevel = @Diff, ThumbnailURL = @Thumb, Status = @Status " +
-                             "WHERE CourseID = @ID";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Title", txt_EditTitle.Text.Trim());
-                cmd.Parameters.AddWithValue("@Desc", txt_EditDescription.Text.Trim());
-                cmd.Parameters.AddWithValue("@Diff", ddl_EditDifficulty.SelectedValue);
-                cmd.Parameters.AddWithValue("@Thumb", txt_EditThumbnail.Text.Trim());
-                cmd.Parameters.AddWithValue("@Status", ddl_EditStatus.SelectedValue);
-                cmd.Parameters.AddWithValue("@ID", Convert.ToInt32(hf_EditCourseID.Value));
                 conn.Open();
-                cmd.ExecuteNonQuery();
+                SqlTransaction tx = conn.BeginTransaction();
+                try
+                {
+                    SqlCommand cmdCourse = new SqlCommand(
+                        "SELECT CourseID FROM Module WHERE ModuleID = @ModuleID", conn, tx);
+                    cmdCourse.Parameters.AddWithValue("@ModuleID", moduleId);
+                    courseId = Convert.ToInt32(cmdCourse.ExecuteScalar());
+
+                    SqlCommand c1 = new SqlCommand(
+                        "DELETE FROM Quiz_Attempt WHERE QuizID IN (SELECT QuizID FROM Quiz WHERE ModuleID = @ModuleID)", conn, tx);
+                    c1.Parameters.AddWithValue("@ModuleID", moduleId);
+                    c1.ExecuteNonQuery();
+
+                    SqlCommand c2 = new SqlCommand(
+                        "DELETE FROM Question WHERE QuizID IN (SELECT QuizID FROM Quiz WHERE ModuleID = @ModuleID)", conn, tx);
+                    c2.Parameters.AddWithValue("@ModuleID", moduleId);
+                    c2.ExecuteNonQuery();
+
+                    SqlCommand c3 = new SqlCommand(
+                        "DELETE FROM Quiz WHERE ModuleID = @ModuleID", conn, tx);
+                    c3.Parameters.AddWithValue("@ModuleID", moduleId);
+                    c3.ExecuteNonQuery();
+
+                    SqlCommand c4 = new SqlCommand(
+                        "DELETE FROM UserProgress WHERE ModuleID = @ModuleID", conn, tx);
+                    c4.Parameters.AddWithValue("@ModuleID", moduleId);
+                    c4.ExecuteNonQuery();
+
+                    SqlCommand c5 = new SqlCommand(
+                        "DELETE FROM Module WHERE ModuleID = @ModuleID", conn, tx);
+                    c5.Parameters.AddWithValue("@ModuleID", moduleId);
+                    c5.ExecuteNonQuery();
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    ShowError("Could not delete module.");
+                    return;
+                }
             }
 
-            hf_ShowEdit.Value = "0";
-            ShowMessage("Course updated successfully!", true);
-            LoadStats();
-            LoadCourses(txt_Search.Text.Trim(), ddl_StatusFilter.SelectedValue);
+            ShowSuccess("Module deleted successfully.");
+            LoadCourses();
+            if (courseId > 0) ShowModulesPanel(courseId);
         }
 
-        void ShowMessage(string msg, bool success)
+        private void ShowSuccess(string msg)
         {
-            lbl_Message.Text = msg;
-            lbl_Message.CssClass = success ? "alert-success" : "alert-error";
-            lbl_Message.Visible = true;
+            pnlSuccess.Visible = true;
+            pnlError.Visible = false;
+            litSuccess.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ShowError(string msg)
+        {
+            pnlError.Visible = true;
+            pnlSuccess.Visible = false;
+            litError.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ClearAlerts()
+        {
+            pnlSuccess.Visible = false;
+            pnlError.Visible = false;
         }
     }
 }

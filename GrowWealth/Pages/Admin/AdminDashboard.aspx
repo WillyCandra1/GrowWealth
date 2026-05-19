@@ -1,257 +1,316 @@
 ﻿<%@ Page Title="Admin Dashboard" Language="C#" MasterPageFile="~/Master/Admin.Master" AutoEventWireup="true" CodeBehind="AdminDashboard.aspx.cs" Inherits="GrowWealth.Pages.Admin.AdminDashboard" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
-        .gw-admin-dashboard {
-            display: block !important;
-            width: 100% !important;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 35px 35px 60px 35px;
-            box-sizing: border-box;
+        .admin-header {
+            margin-bottom: 2rem;
         }
 
-        .gw-dashboard-header {
-            display: block !important;
-            margin-bottom: 28px;
+        .admin-header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 0.3rem;
         }
 
-        .gw-dashboard-header h1 {
-            font-size: 38px;
-            font-weight: 700;
-            margin: 0 0 8px 0;
-            color: #111827;
-            line-height: 1.2;
-        }
-
-        .gw-dashboard-header p {
-            font-size: 16px;
-            color: #6b7280;
+        .admin-header p {
+            color: var(--gw-ink-muted);
             margin: 0;
         }
 
-        .gw-dashboard-message {
-            display: block;
-            color: #dc2626;
-            margin-bottom: 18px;
-            font-size: 14px;
-        }
-
-        .gw-stats-grid {
-            display: grid !important;
+        .stats-grid {
+            display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 30px;
-            width: 100%;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
-        .gw-stat-card {
-            display: block !important;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 24px;
-            min-height: 120px;
-            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-            box-sizing: border-box;
+        .stat-card {
+            background-color: var(--gw-surface);
+            border: 1px solid var(--gw-line);
+            border-radius: 14px;
+            padding: 1.5rem 1.75rem;
         }
 
-        .gw-stat-card h2 {
-            font-size: 36px;
-            font-weight: 700;
-            margin: 0 0 10px 0;
-            color: #111827;
+        .stat-card.accent {
+            background: linear-gradient(135deg, var(--gw-accent) 0%, var(--gw-accent-dark) 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .stat-card.accent .stat-label,
+        .stat-card.accent .stat-value { color: white; }
+
+        .stat-card.accent .stat-label { opacity: 0.85; }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--gw-ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.85rem;
+        }
+
+        .stat-value {
+            font-family: var(--gw-serif);
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--gw-ink);
             line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
 
-        .gw-stat-card p {
-            font-size: 15px;
-            color: #6b7280;
+        .stat-sub {
+            font-size: 0.8rem;
+            color: var(--gw-ink-muted);
+            margin-top: 0.5rem;
+        }
+
+        .stat-card.accent .stat-sub { color: rgba(255,255,255,0.8); }
+
+        .admin-row {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-panel {
+            background-color: var(--gw-surface);
+            border: 1px solid var(--gw-line);
+            border-radius: 14px;
+            padding: 1.75rem;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gw-line-soft);
+        }
+
+        .panel-head h2 {
+            font-size: 1.2rem;
             margin: 0;
-            line-height: 1.4;
         }
 
-        .gw-content-grid {
-            display: grid !important;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 22px;
-            width: 100%;
-            margin-bottom: 24px;
+        .panel-head a {
+            font-size: 0.85rem;
+            color: var(--gw-accent);
+            font-weight: 500;
         }
 
-        .gw-panel {
-            display: block !important;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-            box-sizing: border-box;
-            overflow-x: auto;
-        }
-
-        .gw-panel h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #111827;
-            margin: 0 0 18px 0;
-        }
-
-        .gw-table {
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
         }
 
-        .gw-table th {
-            background: #f9fafb;
-            color: #374151;
-            font-weight: 700;
-            padding: 13px 12px;
-            border-bottom: 1px solid #e5e7eb;
+        .data-table th {
             text-align: left;
-            white-space: nowrap;
-        }
-
-        .gw-table td {
-            padding: 13px 12px;
-            border-bottom: 1px solid #e5e7eb;
-            color: #374151;
-            vertical-align: middle;
-        }
-
-        .gw-table tr:hover td {
-            background: #f9fafb;
-        }
-
-        .gw-shortcuts {
-            display: flex !important;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .gw-btn {
-            display: inline-block !important;
-            padding: 12px 18px;
-            background: #111827;
-            color: #ffffff !important;
-            text-decoration: none !important;
-            border-radius: 10px;
-            font-size: 14px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gw-ink-muted);
             font-weight: 600;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--gw-line);
         }
 
-        .gw-btn:hover {
-            background: #374151;
+        .data-table td {
+            padding: 0.85rem 0.75rem;
+            border-bottom: 1px solid var(--gw-line-soft);
+            font-size: 0.9rem;
+            color: var(--gw-ink);
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background-color: var(--gw-paper); }
+
+        .data-table .role-pill {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .role-pill.admin { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
+        .role-pill.member { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--gw-accent);
+            margin-right: 0.5rem;
+        }
+
+        .status-dot.suspended { background-color: var(--gw-rose); }
+
+        .activity-feed-row {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--gw-line-soft);
+            font-size: 0.88rem;
+        }
+
+        .activity-feed-row:last-child { border-bottom: none; }
+
+        .activity-feed-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--gw-accent-soft);
+            color: var(--gw-accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: var(--gw-serif);
+            margin-right: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .activity-feed-icon.gold { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
+        .activity-feed-icon.blue { background-color: #e3eaf4; color: #2d4a5c; }
+
+        .activity-feed-text { flex: 1; color: var(--gw-ink); }
+
+        .activity-feed-time {
+            color: var(--gw-ink-muted);
+            font-size: 0.78rem;
+            margin-left: 0.75rem;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
         @media (max-width: 1100px) {
-            .gw-stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .gw-content-grid {
-                grid-template-columns: 1fr;
-            }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .admin-row { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 650px) {
-            .gw-admin-dashboard {
-                padding: 25px 18px 50px 18px;
-            }
-
-            .gw-stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .gw-dashboard-header h1 {
-                font-size: 30px;
-            }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
+</asp:Content>
 
-    <div class="gw-admin-dashboard">
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
-        <div class="gw-dashboard-header">
-            <h1>Admin Dashboard</h1>
-            <p>Overview of users, roles, and investment simulation activity.</p>
+    <div class="admin-header">
+        <h1>Admin overview</h1>
+        <p>Monitor activity across the platform and keep content fresh.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card accent">
+            <div class="stat-label">Registered users</div>
+            <div class="stat-value"><asp:Literal ID="litTotalUsers" runat="server"></asp:Literal></div>
+            <div class="stat-sub"><asp:Literal ID="litActiveUsers" runat="server"></asp:Literal> active</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Courses live</div>
+            <div class="stat-value"><asp:Literal ID="litTotalCourses" runat="server"></asp:Literal></div>
+            <div class="stat-sub">Across all skill levels</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Modules published</div>
+            <div class="stat-value"><asp:Literal ID="litTotalModules" runat="server"></asp:Literal></div>
+            <div class="stat-sub"><asp:Literal ID="litTotalQuizzes" runat="server"></asp:Literal> linked quizzes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Quiz attempts</div>
+            <div class="stat-value"><asp:Literal ID="litTotalAttempts" runat="server"></asp:Literal></div>
+            <div class="stat-sub">Avg score <asp:Literal ID="litAvgScore" runat="server"></asp:Literal>%</div>
+        </div>
+    </div>
+
+    <div class="admin-row">
+
+        <div class="admin-panel">
+            <div class="panel-head">
+                <h2>Recent users</h2>
+                <a href="ManageUser.aspx" runat="server">Manage all &rarr;</a>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <asp:Repeater ID="rptRecentUsers" runat="server">
+                        <ItemTemplate>
+                            <tr>
+                                <td><strong><%# Eval("FullName") %></strong></td>
+                                <td><%# Eval("Email") %></td>
+                                <td><span class='<%# "role-pill " + Eval("RoleClass") %>'><%# Eval("RoleName") %></span></td>
+                                <td><span class='<%# "status-dot " + Eval("StatusClass") %>'></span><%# Eval("AccountStatus") %></td>
+                                <td><%# Eval("CreatedAtFmt") %></td>
+                            </tr>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </tbody>
+            </table>
         </div>
 
-        <asp:Label ID="lblMessage" runat="server" CssClass="gw-dashboard-message"></asp:Label>
-
-        <div class="gw-stats-grid">
-
-            <div class="gw-stat-card">
-                <h2>
-                    <asp:Label ID="lblUsers" runat="server" Text="0"></asp:Label>
-                </h2>
-                <p>Registered Users</p>
+        <div class="admin-panel">
+            <div class="panel-head">
+                <h2>Live activity</h2>
+                <span style="font-size: 0.8rem; color: var(--gw-ink-muted);">Last 10</span>
             </div>
 
-            <div class="gw-stat-card">
-                <h2>
-                    <asp:Label ID="lblRoles" runat="server" Text="0"></asp:Label>
-                </h2>
-                <p>User Roles</p>
-            </div>
-
-            <div class="gw-stat-card">
-                <h2>
-                    <asp:Label ID="lblSimulations" runat="server" Text="0"></asp:Label>
-                </h2>
-                <p>Investment Simulations</p>
-            </div>
-
-            <div class="gw-stat-card">
-                <h2>
-                    <asp:Label ID="lblAdmins" runat="server" Text="0"></asp:Label>
-                </h2>
-                <p>Admin Accounts</p>
-            </div>
-
+            <asp:Repeater ID="rptFeed" runat="server">
+                <ItemTemplate>
+                    <div class="activity-feed-row">
+                        <span class='<%# "activity-feed-icon " + Eval("IconClass") %>'><%# Eval("IconText") %></span>
+                        <span class="activity-feed-text"><%# Eval("Description") %></span>
+                        <span class="activity-feed-time"><%# Eval("RelativeTime") %></span>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
         </div>
+    </div>
 
-        <div class="gw-content-grid">
-
-            <div class="gw-panel">
-                <h2>Recent Users</h2>
-
-                <asp:GridView 
-                    ID="gvUsers" 
-                    runat="server" 
-                    AutoGenerateColumns="true" 
-                    CssClass="gw-table"
-                    GridLines="None"
-                    EmptyDataText="No users found.">
-                </asp:GridView>
-            </div>
-
-            <div class="gw-panel">
-                <h2>Recent Investment Simulations</h2>
-
-                <asp:GridView 
-                    ID="gvSimulations" 
-                    runat="server" 
-                    AutoGenerateColumns="true" 
-                    CssClass="gw-table"
-                    GridLines="None"
-                    EmptyDataText="No investment simulations found.">
-                </asp:GridView>
-            </div>
-
+    <div class="admin-panel">
+        <div class="panel-head">
+            <h2>Course catalogue</h2>
+            <a href="ManageCourse.aspx" runat="server">Edit courses &rarr;</a>
         </div>
-
-        <div class="gw-panel">
-            <h2>Admin Shortcuts</h2>
-
-            <div class="gw-shortcuts">
-                <a href="ManageUser.aspx" class="gw-btn">Manage Users</a>
-                <a href="ManageQuiz.aspx" class="gw-btn">Manage Quiz</a>
-                <a href="ManageCourse.aspx" class="gw-btn">Manage Courses</a>
-            </div>
-        </div>
-
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Level</th>
+                    <th>Modules</th>
+                    <th>Enrolments</th>
+                    <th>Avg quiz score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <asp:Repeater ID="rptCoursesTable" runat="server">
+                    <ItemTemplate>
+                        <tr>
+                            <td><strong><%# Eval("Title") %></strong></td>
+                            <td><%# Eval("Difficulty") %></td>
+                            <td><%# Eval("ModuleCount") %></td>
+                            <td><%# Eval("EnrolCount") %></td>
+                            <td><%# Eval("AvgScoreFmt") %>%</td>
+                        </tr>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </tbody>
+        </table>
     </div>
 
 </asp:Content>

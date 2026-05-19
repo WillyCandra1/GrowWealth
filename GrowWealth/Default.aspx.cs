@@ -1,35 +1,48 @@
 using System;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Web.UI;
 
 namespace GrowWealth
 {
-    public partial class Default : Page
+    public partial class _Default : Page
     {
-        protected void Page_PreInit(object sender, EventArgs e)
-        {
-            if (Request.IsAuthenticated)
-            {
-                this.MasterPageFile = "~/Master/after_landing.Master";
-            }
-            else
-            {
-                this.MasterPageFile = "~/Master/before_landing.Master";
-            }
-        }
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.IsAuthenticated)
             {
-                phAnonymous.Visible = false;
-                phDashboard.Visible = true;
-                litUserName.Text = Context.User.Identity.Name;
+                Response.Redirect("~/Pages/Member/Dashboard.aspx");
+                return;
             }
-            else
+
+            if (!IsPostBack)
             {
-                phAnonymous.Visible = true;
-                phDashboard.Visible = false;
+                LoadFeaturedCourses();
             }
+        }
+
+        private void LoadFeaturedCourses()
+        {
+            string sql = @"
+                SELECT TOP 3
+                    c.CourseID, c.Title, c.Description, c.Difficulty, c.EstimatedHours,
+                    (SELECT COUNT(*) FROM Module WHERE CourseID = c.CourseID) AS ModuleCount
+                FROM Course c
+                WHERE c.IsActive = 1
+                ORDER BY c.CourseID";
+
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                new SqlDataAdapter(sql, conn).Fill(dt);
+            }
+
+            rptFeatured.DataSource = dt;
+            rptFeatured.DataBind();
         }
     }
 }

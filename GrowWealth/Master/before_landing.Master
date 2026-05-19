@@ -1,49 +1,311 @@
-<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="before_landing.Master.cs" Inherits="GrowWealth.before_landing" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="before_landing.Master.cs" Inherits="GrowWealth.Master.before_landing" %>
 
 <!DOCTYPE html>
 <html lang="en">
 <head runat="server">
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - Grow Wealth</title>
-    <link href="~/Assets/css/style.css" rel="stylesheet" type="text/css" runat="server" />
-    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
-    </asp:ContentPlaceHolder>
+    <title>Grow Wealth — Financial literacy that compounds</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/css/style.css") %>" />
+
+    <style>
+        :root {
+            --gw-ink: #1a1a1a;
+            --gw-ink-soft: #2c2c2c;
+            --gw-ink-muted: #6b6b6b;
+            --gw-paper: #faf8f3;
+            --gw-paper-warm: #f3eee4;
+            --gw-surface: #ffffff;
+            --gw-line: #e5e0d6;
+            --gw-line-soft: #ede9e0;
+
+            --gw-accent: #0b6b3a;
+            --gw-accent-dark: #094f2b;
+            --gw-accent-soft: #e3efe8;
+            --gw-gold: #b88a3e;
+            --gw-gold-soft: #f5ead6;
+            --gw-rose: #9c3a3a;
+            --gw-rose-soft: #f5e0dc;
+
+            --gw-serif: 'Fraunces', Georgia, serif;
+            --gw-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0;
+            background-color: var(--gw-paper);
+            color: var(--gw-ink);
+            font-family: var(--gw-sans);
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--gw-ink); text-decoration: none; transition: color 0.18s; }
+        a:hover { color: var(--gw-accent); }
+
+        h1, h2, h3, h4 {
+            font-family: var(--gw-serif);
+            font-weight: 600;
+            color: var(--gw-ink);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin: 0;
+        }
+
+        .pub-nav {
+            background-color: var(--gw-paper);
+            border-bottom: 1px solid var(--gw-line);
+            padding: 1.1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .pub-nav-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 0.45rem;
+            text-decoration: none;
+        }
+
+        .brand .brand-mark {
+            width: 28px;
+            height: 28px;
+            background-color: var(--gw-ink);
+            color: var(--gw-paper);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--gw-serif);
+            font-weight: 700;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .brand .brand-name {
+            font-family: var(--gw-serif);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gw-ink);
+            letter-spacing: -0.01em;
+        }
+
+        .pub-nav-links {
+            display: flex;
+            gap: 1.75rem;
+            align-items: center;
+        }
+
+        .pub-nav-links a.nav-link {
+            color: var(--gw-ink-soft);
+            font-size: 0.92rem;
+            font-weight: 500;
+        }
+
+        .pub-nav-links a.nav-link:hover { color: var(--gw-accent); }
+
+        .pub-nav-cta {
+            display: flex;
+            gap: 0.65rem;
+            align-items: center;
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--gw-ink);
+            padding: 0.6rem 1.1rem;
+            border: 1px solid var(--gw-line);
+            border-radius: 6px;
+            font-family: var(--gw-sans);
+            font-size: 0.88rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.18s;
+            display: inline-block;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--gw-ink);
+            color: var(--gw-ink);
+        }
+
+        .btn-filled {
+            background-color: var(--gw-ink);
+            color: var(--gw-paper);
+            padding: 0.6rem 1.1rem;
+            border: 1px solid var(--gw-ink);
+            border-radius: 6px;
+            font-family: var(--gw-sans);
+            font-size: 0.88rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.18s;
+            display: inline-block;
+        }
+
+        .btn-filled:hover {
+            background-color: var(--gw-accent-dark);
+            border-color: var(--gw-accent-dark);
+            color: var(--gw-paper);
+        }
+
+        .pub-main {
+            min-height: calc(100vh - 200px);
+        }
+
+        .pub-footer {
+            background-color: var(--gw-ink);
+            color: var(--gw-paper-warm);
+            padding: 3.5rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .pub-footer-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .pub-footer-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .pub-footer h4 {
+            color: var(--gw-paper);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-family: var(--gw-sans);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .pub-footer .footer-brand .brand-name { color: var(--gw-paper); }
+        .pub-footer .footer-brand .brand-mark {
+            background-color: var(--gw-paper);
+            color: var(--gw-ink);
+        }
+
+        .pub-footer p { color: rgba(250, 248, 243, 0.65); font-size: 0.9rem; max-width: 280px; }
+
+        .pub-footer ul { list-style: none; padding: 0; margin: 0; }
+        .pub-footer ul li { margin-bottom: 0.55rem; }
+        .pub-footer ul li a { color: rgba(250, 248, 243, 0.65); font-size: 0.9rem; }
+        .pub-footer ul li a:hover { color: var(--gw-paper); }
+
+        .pub-footer-meta {
+            border-top: 1px solid rgba(250, 248, 243, 0.15);
+            padding-top: 1.5rem;
+            color: rgba(250, 248, 243, 0.5);
+            font-size: 0.82rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pub-container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        @media (max-width: 760px) {
+            .pub-nav-links { display: none; }
+            .pub-footer-row { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .pub-footer-row { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
 </head>
 <body>
-    <form runat="server" id="form1">
-        <header class="navbar">
-            <div class="container">
-                <a href="~/Default.aspx" runat="server" class="navbar-brand">Grow Wealth</a>
-                
-                <div class="navbar-links">
-                    <a href="~/" runat="server">Courses</a>
-                    <a href="#">About</a>
-                </div>
+    <form id="form1" runat="server">
 
-                <div class="navbar-actions">
-                    <asp:LoginView runat="server" ViewStateMode="Disabled">
-                        <AnonymousTemplate>
-                            <a href="~/Pages/Public/Login.aspx" runat="server" class="btn btn-outline">Login</a>
-                            <a href="~/Pages/Public/Register.aspx" runat="server" class="btn btn-primary">Register</a>
-                        </AnonymousTemplate>
-                        <LoggedInTemplate>
-                            <span style="margin-right: 1rem; color: var(--text-secondary);">Welcome, <%: Context.User.Identity.Name  %>!</span>
-                            <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Logout" LogoutPageUrl="~/" CssClass="btn btn-outline" />
-                        </LoggedInTemplate>
-                    </asp:LoginView>
+        <nav class="pub-nav">
+            <div class="pub-nav-inner">
+                <a href="<%= ResolveUrl("~/Default.aspx") %>" class="brand">
+                    <span class="brand-mark">G</span>
+                    <span class="brand-name">Grow Wealth</span>
+                </a>
+                <div class="pub-nav-links">
+                    <a href="<%= ResolveUrl("~/Default.aspx") %>#courses" class="nav-link">Courses</a>
+                    <a href="<%= ResolveUrl("~/Default.aspx") %>#why" class="nav-link">Why us</a>
+                    <a href="<%= ResolveUrl("~/Default.aspx") %>#about" class="nav-link">About</a>
+                </div>
+                <div class="pub-nav-cta">
+                    <a href="<%= ResolveUrl("~/Pages/Public/Login.aspx") %>" class="btn-ghost">Log in</a>
+                    <a href="<%= ResolveUrl("~/Pages/Public/Register.aspx") %>" class="btn-filled">Get started</a>
                 </div>
             </div>
-        </header>
+        </nav>
 
-        <main class="main-content">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
+        <main class="pub-main">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
         </main>
 
-        <footer class="footer">
-            <div class="container">
-                <p>&copy; <%: DateTime.Now.Year %> Grow Wealth &middot; Privacy &middot; Terms</p>
+        <footer class="pub-footer">
+            <div class="pub-footer-inner">
+                <div class="pub-footer-row">
+                    <div class="footer-brand">
+                        <div class="brand" style="margin-bottom: 1rem;">
+                            <span class="brand-mark">G</span>
+                            <span class="brand-name">Grow Wealth</span>
+                        </div>
+                        <p>An editorial-style platform for financial literacy. Learn at your own pace, then put what you've learned into practice.</p>
+                    </div>
+                    <div>
+                        <h4>Learn</h4>
+                        <ul>
+                            <li><a href="<%= ResolveUrl("~/Default.aspx") %>#courses">All courses</a></li>
+                            <li><a href="<%= ResolveUrl("~/Pages/Public/Register.aspx") %>">Get started</a></li>
+                            <li><a href="<%= ResolveUrl("~/Pages/Public/Login.aspx") %>">Member log in</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="<%= ResolveUrl("~/Default.aspx") %>#about">About</a></li>
+                            <li><a href="<%= ResolveUrl("~/Default.aspx") %>#why">Why us</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="#">Terms</a></li>
+                            <li><a href="#">Privacy</a></li>
+                            <li><a href="#">Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pub-footer-meta">
+                    <span>&copy; <%= DateTime.Now.Year %> Grow Wealth. All rights reserved.</span>
+                    <span>Made with care in Kuala Lumpur.</span>
+                </div>
             </div>
         </footer>
     </form>

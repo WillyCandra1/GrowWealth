@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Configuration;
-using System.Web.Security;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -10,257 +10,256 @@ namespace GrowWealth.Pages.Admin
 {
     public partial class ManageUser : Page
     {
-        string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // redirect if not logged in
-            if (!Request.IsAuthenticated)
-            {
-                FormsAuthentication.RedirectToLoginPage();
-                return;
-            }
-
-            // only admin can see this page
-            if (!CheckIfAdmin())
-            {
-                Response.Redirect("~/Default.aspx");
-                return;
-            }
-
             if (!IsPostBack)
             {
-                LoadStats();
-                LoadUsers("", "", "");
+                LoadUsers();
             }
         }
 
-        bool CheckIfAdmin()
+        private void LoadUsers()
         {
-            bool isAdmin = false;
+            StringBuilder sql = new StringBuilder(@"
+                SELECT u.UserID, u.FullName, u.Email, u.AccountStatus, u.CreatedAt,
+                       u.RoleID, r.RoleName
+                FROM [User] u
+                INNER JOIN Role r ON u.RoleID = r.RoleID
+                WHERE 1 = 1");
+
+            string search = (txtSearch.Text ?? "").Trim();
+            string roleFilter = ddlFilterRole.SelectedValue;
+            string statusFilter = ddlFilterStatus.SelectedValue;
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                sql.Append(" AND (u.FullName LIKE @Search OR u.Email LIKE @Search)");
+            }
+            if (!string.IsNullOrEmpty(roleFilter))
+            {
+                sql.Append(" AND u.RoleID = @RoleID");
+            }
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                sql.Append(" AND u.AccountStatus = @Status");
+            }
+
+            sql.Append(" ORDER BY u.CreatedAt DESC");
+
+            DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                SqlCommand cmd = new SqlCommand("SELECT RoleID FROM [User] WHERE FullName = @Name AND AccountStatus = 'Active'", conn);
-                cmd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
-                conn.Open();
-                object result = cmd.ExecuteScalar();
-                if (result != null && Convert.ToInt32(result) == 1)
-                {
-                    isAdmin = true;
-                }
+                SqlCommand cmd = new SqlCommand(sql.ToString(), conn);
+                if (!string.IsNullOrEmpty(search))
+                    cmd.Parameters.AddWithValue("@Search", "%" + search + "%");
+                if (!string.IsNullOrEmpty(roleFilter))
+                    cmd.Parameters.AddWithValue("@RoleID", roleFilter);
+                if (!string.IsNullOrEmpty(statusFilter))
+                    cmd.Parameters.AddWithValue("@Status", statusFilter);
+
+                new SqlDataAdapter(cmd).Fill(dt);
             }
-            return isAdmin;
-        }
 
-        // helper to get initials for the avatar circle
-        protected string GetInitials(string fullName)
-        {
-            if (string.IsNullOrWhiteSpace(fullName))
-                return "?";
-
-            string[] parts = fullName.Trim().Split(' ');
-            if (parts.Length == 1)
-                return parts[0][0].ToString().ToUpper();
-
-            return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
-        }
-
-        void LoadStats()
-        {
-            using (SqlConnection conn = new SqlConnection(connStr))
+            dt.Columns.Add("RoleClass", typeof(string));
+            dt.Columns.Add("StatusClass", typeof(string));
+            dt.Columns.Add("CreatedAtFmt", typeof(string));
+            foreach (DataRow row in dt.Rows)
             {
-                string sql = "SELECT COUNT(*) AS Total, " +
-                             "SUM(CASE WHEN RoleID = 1 THEN 1 ELSE 0 END) AS Admins, " +
-                             "SUM(CASE WHEN RoleID = 2 THEN 1 ELSE 0 END) AS Members, " +
-                             "SUM(CASE WHEN AccountStatus = 'Active' THEN 1 ELSE 0 END) AS Active " +
-                             "FROM [User]";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                conn.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
-                {
-                    lbl_UserCount.Text = dr["Total"].ToString();
-                    lbl_AdminCount.Text = dr["Admins"].ToString();
-                    lbl_MemberCount.Text = dr["Members"].ToString();
-                    lbl_ActiveCount.Text = dr["Active"].ToString();
-                }
+                row["RoleClass"] = (row["RoleName"].ToString() == "Admin") ? "admin" : "member";
+                row["StatusClass"] = (row["AccountStatus"].ToString() == "Active") ? "active" : "suspended";
+                row["CreatedAtFmt"] = Convert.ToDateTime(row["CreatedAt"]).ToString("dd MMM yyyy");
             }
+
+            rptUsers.DataSource = dt;
+            rptUsers.DataBind();
+
+            pnlEmpty.Visible = (dt.Rows.Count == 0);
         }
 
-        void LoadUsers(string search, string roleId, string status)
+        protected void btnFilter_Click(object sender, EventArgs e)
         {
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                string sql = "SELECT u.UserID, u.FullName, u.Email, u.UserProfession, " +
-                             "u.AccountStatus, u.CreatedAt, r.RoleName, u.RoleID " +
-                             "FROM [User] u " +
-                             "INNER JOIN Role r ON u.RoleID = r.RoleID " +
-                             "WHERE (@Search = '' OR u.FullName LIKE '%' + @Search + '%' OR u.Email LIKE '%' + @Search + '%') " +
-                             "AND (@RoleID IS NULL OR u.RoleID = @RoleID) " +
-                             "AND (@Status = '' OR u.AccountStatus = @Status) " +
-                             "ORDER BY u.CreatedAt DESC";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@Search", search);
-                cmd.Parameters.Add("@RoleID", SqlDbType.Int).Value =
-                    string.IsNullOrEmpty(roleId) ? (object)DBNull.Value : Convert.ToInt32(roleId);
-                cmd.Parameters.AddWithValue("@Status", status);
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                gv_Users.DataSource = dt;
-                gv_Users.DataBind();
-            }
+            LoadUsers();
         }
 
-        protected void btn_Search_Click(object sender, EventArgs e)
+        protected void btnReset_Click(object sender, EventArgs e)
         {
-            LoadUsers(txt_Search.Text.Trim(), ddl_RoleFilter.SelectedValue, ddl_StatusFilter.SelectedValue);
+            txtSearch.Text = "";
+            ddlFilterRole.SelectedValue = "";
+            ddlFilterStatus.SelectedValue = "";
+            LoadUsers();
         }
 
-        protected void gv_Users_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected void rptUsers_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
             int userId = Convert.ToInt32(e.CommandArgument);
 
-            if (e.CommandName == "DeleteUser")
+            if (e.CommandName == "EditUser")
             {
-                // dont let admin delete their own account
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    SqlCommand check = new SqlCommand("SELECT FullName FROM [User] WHERE UserID = @ID", conn);
-                    check.Parameters.AddWithValue("@ID", userId);
-                    conn.Open();
-                    string name = check.ExecuteScalar()?.ToString();
-
-                    if (name == Context.User.Identity.Name)
-                    {
-                        ShowMessage("You cannot delete your own account!", false);
-                        LoadUsers("", "", "");
-                        return;
-                    }
-
-                    SqlCommand cmd = new SqlCommand("DELETE FROM [User] WHERE UserID = @ID", conn);
-                    cmd.Parameters.AddWithValue("@ID", userId);
-                    cmd.ExecuteNonQuery();
-                }
-                ShowMessage("User deleted!", true);
-                LoadStats();
-                LoadUsers(txt_Search.Text.Trim(), ddl_RoleFilter.SelectedValue, ddl_StatusFilter.SelectedValue);
+                LoadUserIntoForm(userId);
             }
-            else if (e.CommandName == "EditUser")
+            else if (e.CommandName == "DeleteUser")
             {
-                // load user data into edit modal
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM [User] WHERE UserID = @ID", conn);
-                    cmd.Parameters.AddWithValue("@ID", userId);
-                    conn.Open();
-                    SqlDataReader dr = cmd.ExecuteReader();
-                    if (dr.Read())
-                    {
-                        hf_EditUserID.Value = dr["UserID"].ToString();
-                        txt_EditFullName.Text = dr["FullName"].ToString();
-                        txt_EditEmail.Text = dr["Email"].ToString();
-                        txt_EditProfession.Text = dr["UserProfession"].ToString();
-                        ddl_EditRole.SelectedValue = dr["RoleID"].ToString();
-                        ddl_EditStatus.SelectedValue = dr["AccountStatus"].ToString();
-                    }
-                }
-                hf_ShowEdit.Value = "1";
-                LoadUsers(txt_Search.Text.Trim(), ddl_RoleFilter.SelectedValue, ddl_StatusFilter.SelectedValue);
+                DeleteUser(userId);
             }
         }
 
-        protected void btn_AddUser_Click(object sender, EventArgs e)
+        private void LoadUserIntoForm(int userId)
         {
-            // validate required fields
-            if (string.IsNullOrWhiteSpace(txt_FullName.Text) ||
-                string.IsNullOrWhiteSpace(txt_Email.Text) ||
-                string.IsNullOrWhiteSpace(txt_Password.Text))
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                ShowMessage("Please fill in all required fields.", false);
-                return;
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(
+                    @"SELECT FullName, Email, RoleID, AccountStatus, CreatedAt, LastLogin
+                      FROM [User] WHERE UserID = @UserID", conn);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (!rd.Read())
+                    {
+                        ShowError("User not found.");
+                        return;
+                    }
+                    txtFullName.Text = rd["FullName"].ToString();
+                    txtEmail.Text = rd["Email"].ToString();
+                    ddlRole.SelectedValue = rd["RoleID"].ToString();
+                    ddlStatus.SelectedValue = rd["AccountStatus"].ToString();
+                    litEditHeader.Text = "Editing " + Server.HtmlEncode(rd["FullName"].ToString());
+                    litDetailJoined.Text = Convert.ToDateTime(rd["CreatedAt"]).ToString("dd MMM yyyy");
+                    litDetailLastLogin.Text = (rd["LastLogin"] == DBNull.Value)
+                        ? "Never"
+                        : Convert.ToDateTime(rd["LastLogin"]).ToString("dd MMM yyyy");
+                }
+
+                SqlCommand c1 = new SqlCommand(
+                    "SELECT COUNT(*) FROM Enrollment WHERE UserID = @UserID", conn);
+                c1.Parameters.AddWithValue("@UserID", userId);
+                litDetailEnrols.Text = c1.ExecuteScalar().ToString();
+
+                SqlCommand c2 = new SqlCommand(
+                    "SELECT COUNT(*) FROM UserProgress WHERE UserID = @UserID AND IsCompleted = 1", conn);
+                c2.Parameters.AddWithValue("@UserID", userId);
+                litDetailModules.Text = c2.ExecuteScalar().ToString();
+
+                SqlCommand c3 = new SqlCommand(
+                    "SELECT COUNT(*) FROM Quiz_Attempt WHERE UserID = @UserID", conn);
+                c3.Parameters.AddWithValue("@UserID", userId);
+                litDetailAttempts.Text = c3.ExecuteScalar().ToString();
+
+                SqlCommand c4 = new SqlCommand(
+                    @"SELECT AVG(CAST(Score AS FLOAT) * 100.0 / NULLIF(TotalQuestions, 0))
+                      FROM Quiz_Attempt WHERE UserID = @UserID", conn);
+                c4.Parameters.AddWithValue("@UserID", userId);
+                object avg = c4.ExecuteScalar();
+                litDetailAvg.Text = (avg == null || avg == DBNull.Value) ? "0" : Convert.ToInt32(avg).ToString();
             }
+
+            ViewState["EditingUserID"] = userId;
+            pnlEditForm.Visible = true;
+            pnlSuccess.Visible = false;
+            pnlError.Visible = false;
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+            if (ViewState["EditingUserID"] == null) return;
+
+            int userId = Convert.ToInt32(ViewState["EditingUserID"]);
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // check if email already exists
-                SqlCommand checkEmail = new SqlCommand("SELECT COUNT(*) FROM [User] WHERE Email = @Email", conn);
-                checkEmail.Parameters.AddWithValue("@Email", txt_Email.Text.Trim());
                 conn.Open();
 
-                int count = (int)checkEmail.ExecuteScalar();
-                if (count > 0)
+                SqlCommand cmdDup = new SqlCommand(
+                    "SELECT COUNT(*) FROM [User] WHERE Email = @Email AND UserID <> @UserID", conn);
+                cmdDup.Parameters.AddWithValue("@Email", txtEmail.Text.Trim().ToLower());
+                cmdDup.Parameters.AddWithValue("@UserID", userId);
+                int dup = Convert.ToInt32(cmdDup.ExecuteScalar());
+                if (dup > 0)
                 {
-                    ShowMessage("This email is already registered.", false);
+                    ShowError("Another user already uses that email.");
                     return;
                 }
 
-                string sql = "INSERT INTO [User] (RoleID, FullName, Email, PasswordHash, UserProfession, AccountStatus) " +
-                             "VALUES (@RoleID, @FullName, @Email, @Password, @Profession, @Status)";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@RoleID", Convert.ToInt32(ddl_Role.SelectedValue));
-                cmd.Parameters.AddWithValue("@FullName", txt_FullName.Text.Trim());
-                cmd.Parameters.AddWithValue("@Email", txt_Email.Text.Trim());
-                cmd.Parameters.AddWithValue("@Password", txt_Password.Text);
-                cmd.Parameters.AddWithValue("@Profession", txt_Profession.Text.Trim());
-                cmd.Parameters.AddWithValue("@Status", ddl_AccountStatus.SelectedValue);
-                cmd.ExecuteNonQuery();
+                SqlCommand upd = new SqlCommand(
+                    @"UPDATE [User]
+                      SET FullName = @FullName, Email = @Email,
+                          RoleID = @RoleID, AccountStatus = @Status
+                      WHERE UserID = @UserID", conn);
+                upd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
+                upd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim().ToLower());
+                upd.Parameters.AddWithValue("@RoleID", ddlRole.SelectedValue);
+                upd.Parameters.AddWithValue("@Status", ddlStatus.SelectedValue);
+                upd.Parameters.AddWithValue("@UserID", userId);
+                upd.ExecuteNonQuery();
             }
 
-            // clear form
-            txt_FullName.Text = "";
-            txt_Email.Text = "";
-            txt_Password.Text = "";
-            txt_Profession.Text = "";
-
-            ShowMessage("User added successfully!", true);
-            LoadStats();
-            LoadUsers("", "", "");
+            pnlEditForm.Visible = false;
+            ViewState["EditingUserID"] = null;
+            ShowSuccess("User updated successfully.");
+            LoadUsers();
         }
 
-        protected void btn_UpdateUser_Click(object sender, EventArgs e)
+        protected void btnCancel_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txt_EditFullName.Text) ||
-                string.IsNullOrWhiteSpace(txt_EditEmail.Text))
-            {
-                ShowMessage("Name and email are required.", false);
-                hf_ShowEdit.Value = "1";
-                return;
-            }
+            pnlEditForm.Visible = false;
+            ViewState["EditingUserID"] = null;
+        }
 
+        private void DeleteUser(int userId)
+        {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "UPDATE [User] SET FullName = @FullName, Email = @Email, " +
-                             "RoleID = @RoleID, UserProfession = @Profession, AccountStatus = @Status " +
-                             "WHERE UserID = @ID";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@FullName", txt_EditFullName.Text.Trim());
-                cmd.Parameters.AddWithValue("@Email", txt_EditEmail.Text.Trim());
-                cmd.Parameters.AddWithValue("@RoleID", Convert.ToInt32(ddl_EditRole.SelectedValue));
-                cmd.Parameters.AddWithValue("@Profession", txt_EditProfession.Text.Trim());
-                cmd.Parameters.AddWithValue("@Status", ddl_EditStatus.SelectedValue);
-                cmd.Parameters.AddWithValue("@ID", Convert.ToInt32(hf_EditUserID.Value));
                 conn.Open();
-                cmd.ExecuteNonQuery();
+                SqlTransaction tx = conn.BeginTransaction();
+                try
+                {
+                    string[] cleanup = new string[]
+                    {
+                        "DELETE FROM Quiz_Attempt WHERE UserID = @UserID",
+                        "DELETE FROM UserProgress WHERE UserID = @UserID",
+                        "DELETE FROM Enrollment WHERE UserID = @UserID",
+                        "DELETE FROM Login_Log WHERE UserID = @UserID",
+                        "DELETE FROM InvestmentSimulation WHERE UserID = @UserID",
+                        "DELETE FROM [User] WHERE UserID = @UserID"
+                    };
+
+                    foreach (string sql in cleanup)
+                    {
+                        SqlCommand cmd = new SqlCommand(sql, conn, tx);
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    ShowError("Could not delete user.");
+                    return;
+                }
             }
 
-            hf_ShowEdit.Value = "0";
-            ShowMessage("User updated successfully!", true);
-            LoadStats();
-            LoadUsers(txt_Search.Text.Trim(), ddl_RoleFilter.SelectedValue, ddl_StatusFilter.SelectedValue);
+            ShowSuccess("User deleted successfully.");
+            LoadUsers();
         }
 
-        void ShowMessage(string msg, bool success)
+        private void ShowSuccess(string msg)
         {
-            lbl_Message.Text = msg;
-            lbl_Message.CssClass = success ? "alert-success" : "alert-error";
-            lbl_Message.Visible = true;
+            pnlSuccess.Visible = true;
+            pnlError.Visible = false;
+            litSuccess.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ShowError(string msg)
+        {
+            pnlError.Visible = true;
+            pnlSuccess.Visible = false;
+            litError.Text = Server.HtmlEncode(msg);
         }
     }
 }

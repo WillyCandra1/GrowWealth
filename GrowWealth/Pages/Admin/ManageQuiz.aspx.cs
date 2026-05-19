@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Configuration;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace GrowWealth.Pages.Admin
 {
-    public partial class ManageQuiz : System.Web.UI.Page
+    public partial class ManageQuiz : Page
     {
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -19,247 +19,290 @@ namespace GrowWealth.Pages.Admin
                 LoadCourses();
             }
         }
-        protected void Course_SelectedIndexChanged(object sender, EventArgs e)
+
+        private void LoadCourses()
         {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+            ddlCourse.Items.Clear();
+            ddlCourse.Items.Add(new ListItem("-- Select course --", ""));
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "SELECT ModuleID, Title, OrderIndex FROM Module WHERE CourseID = @CourseID ORDER BY OrderIndex";
-                SqlCommand command = new SqlCommand(sql, conn);
-                command.Parameters.AddWithValue("@CourseID", CourseList.SelectedValue);
-
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT CourseID, Title FROM Course ORDER BY Title", conn);
                 conn.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                ModuleList.Items.Clear();
-                ModuleList.Items.Add(new ListItem("Select a Module: ", ""));
-                while (reader.Read())
+                using (SqlDataReader rd = cmd.ExecuteReader())
                 {
-                    ModuleList.Items.Add(new ListItem(
-                        "Module " + reader["OrderIndex"].ToString() + " - " + reader["Title"].ToString(),
-                        reader["ModuleID"].ToString()
-                    ));
-                }
-            }
-            QuizHeader.Visible = false;
-            QuestionList.DataSource = null;
-            QuestionList.DataBind();
-            ViewState["QuizID"] = null;
-        }
-        protected void LoadCourses()
-        {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-
-            using(SqlConnection conn = new SqlConnection(connStr))
-            {
-                string sql = "SELECT CourseID, Title FROM Course WHERE Status = 'Active'";
-                SqlCommand command = new SqlCommand(sql, conn);
-
-                conn.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                CourseList.Items.Clear();
-                CourseList.Items.Add(new ListItem("Select a Course: ", ""));
-                while (reader.Read())
-                {
-                    CourseList.Items.Add(new ListItem(
-                        reader["Title"].ToString(),
-                        reader["CourseID"].ToString()
-                    ));
-                }
-            }
-        }
-
-        protected void loadButtonClick(object sender, EventArgs e)
-        {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-
-            using(SqlConnection conn = new SqlConnection(connStr))
-            {
-                string sql = @"SELECT q.QuizID, q.Title, q.PassMarkPercent, COUNT(qn.QuestionID) as QuestionCount
-                                FROM Quiz q 
-                                LEFT JOIN Question qn ON q.QuizID = qn.QuizID
-                                WHERE q.ModuleID = @ModuleID
-                                GROUP BY q.QuizID, q.Title, q.PassMarkPercent";
-
-                SqlCommand command = new SqlCommand(sql, conn);
-                command.Parameters.AddWithValue("@ModuleID", ModuleList.SelectedValue);
-
-                conn.Open();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    string quizID = reader["QuizID"].ToString();
-                    quizTitle.Text = reader["Title"].ToString();
-                    quizData.Text = reader["QuestionCount"] + " Questions - Passing Marks: " + reader["PassMarkPercent"] + "%";
-                    QuizHeader.Visible = true;
-                    ViewState["QuizID"] = quizID;
-                    reader.Close();
-                    LoadQuestion(quizID);
-                }
-                else
-                {
-                    quizTitle.Text = "No Quiz Found for this Module.";
-                    quizData.Text = "";
-                    QuizHeader.Visible = true;
-                    reader.Close();
-
-                    QuestionList.DataSource = null;
-                    QuestionList.DataBind();
-                    ViewState["QuizID"] = null; 
-                }
-
-            }
-        }
-        protected void LoadQuestion(string quizID)
-        {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-
-            using (SqlConnection conn = new SqlConnection(connStr))
-            {
-                string sql = "SELECT QuestionID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer FROM Question WHERE QuizID = @QuizID";
-                SqlCommand command = new SqlCommand(sql, conn);
-                command.Parameters.AddWithValue("@QuizID", quizID);
-
-                conn.Open();
-                SqlDataAdapter data = new SqlDataAdapter(command);
-                DataTable table = new DataTable();
-                data.Fill(table);
-
-                QuestionList.DataSource = table;
-                QuestionList.DataBind();
-            }
-        }
-        protected void QuestionList_ItemCommand(object source, RepeaterCommandEventArgs e)
-        {
-            if (e.CommandName == "Delete")
-            {
-                string questionID = e.CommandArgument.ToString();
-                string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    string sql = "DELETE FROM Question WHERE QuestionID = @QuestionID";
-                    SqlCommand command = new SqlCommand(sql, conn);
-                    command.Parameters.AddWithValue("@QuestionID", questionID);
-
-                    conn.Open();
-                    command.ExecuteNonQuery();
-                }
-                loadButtonClick(null, null);
-            }
-            if(e.CommandName == "Edit")
-            {
-                string questionID = e.CommandArgument.ToString();
-                ViewState["EditQuestionID"] = questionID;
-                AddQuestions.Visible = true;
-                questionTitle.Text = "Edit Question";
-
-                string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    string sql = @"SELECT QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer FROM Question WHERE QuestionID = @QuestionID";
-
-                    SqlCommand command = new SqlCommand(sql, conn);
-                    command.Parameters.AddWithValue("@QuestionID", questionID);
-
-                    conn.Open();
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    if (reader.Read())
+                    while (rd.Read())
                     {
-                        questionText.Text = reader["QuestionText"].ToString();
-                        TextOptionA.Text = reader["OptionA"].ToString();
-                        TextOptionB.Text = reader["OptionB"].ToString();
-                        TextOptionC.Text = reader["OptionC"].ToString();
-                        TextOptionD.Text = reader["OptionD"].ToString();
-                        CorrectAnswerList.SelectedValue = reader["CorrectAnswer"].ToString();
+                        ddlCourse.Items.Add(new ListItem(rd["Title"].ToString(), rd["CourseID"].ToString()));
                     }
                 }
-                saveQuestion.Text = "Save Changes";
+            }
+
+            ddlModule.Items.Clear();
+            ddlModule.Items.Add(new ListItem("-- Select course first --", ""));
+            ddlModule.Enabled = false;
+        }
+
+        protected void ddlCourse_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ddlModule.Items.Clear();
+            pnlQuiz.Visible = false;
+            ClearAlerts();
+
+            if (string.IsNullOrEmpty(ddlCourse.SelectedValue))
+            {
+                ddlModule.Items.Add(new ListItem("-- Select course first --", ""));
+                ddlModule.Enabled = false;
+                return;
+            }
+
+            ddlModule.Items.Add(new ListItem("-- Select module --", ""));
+            ddlModule.Enabled = true;
+
+            int courseId = int.Parse(ddlCourse.SelectedValue);
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT ModuleID, Title, OrderIndex FROM Module WHERE CourseID = @CourseID ORDER BY OrderIndex", conn);
+                cmd.Parameters.AddWithValue("@CourseID", courseId);
+                conn.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    while (rd.Read())
+                    {
+                        string label = rd["OrderIndex"] + ". " + rd["Title"];
+                        ddlModule.Items.Add(new ListItem(label, rd["ModuleID"].ToString()));
+                    }
+                }
             }
         }
-        protected void addQuestionClick(object sender, EventArgs e)
+
+        protected void ddlModule_SelectedIndexChanged(object sender, EventArgs e)
         {
-            AddQuestions.Visible = true; 
+            pnlQuiz.Visible = false;
+            ClearAlerts();
+
+            if (string.IsNullOrEmpty(ddlModule.SelectedValue)) return;
+
+            int moduleId = int.Parse(ddlModule.SelectedValue);
+            LoadQuizForModule(moduleId);
         }
-        protected void cancelButtonClick(object sender, EventArgs e)
+
+        private void LoadQuizForModule(int moduleId)
         {
-            AddQuestions.Visible = false;
-            ViewState["EditQuestionID"] = null;
-            saveQuestion.Text = "Save Question";
-            questionTitle.Text = "Add New Question";
+            int quizId = 0;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT QuizID, Title, PassMark FROM Quiz WHERE ModuleID = @ModuleID", conn);
+                cmd.Parameters.AddWithValue("@ModuleID", moduleId);
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.Read())
+                    {
+                        quizId = Convert.ToInt32(rd["QuizID"]);
+                        litQuizTitle.Text = Server.HtmlEncode(rd["Title"].ToString());
+                        txtPassMark.Text = rd["PassMark"].ToString();
+                    }
+                }
+
+                if (quizId == 0)
+                {
+                    rd_CloseAndCreate(conn, moduleId, out quizId);
+                }
+
+                SqlCommand cmdCount = new SqlCommand(
+                    "SELECT COUNT(*) FROM Quiz_Attempt WHERE QuizID = @QuizID", conn);
+                cmdCount.Parameters.AddWithValue("@QuizID", quizId);
+                litAttemptCount.Text = cmdCount.ExecuteScalar().ToString();
+            }
+
+            ViewState["QuizID"] = quizId;
+            LoadQuestions(quizId);
+            pnlQuiz.Visible = true;
         }
-        protected void saveButtonClick(object sender, EventArgs e)
+
+        private void rd_CloseAndCreate(SqlConnection conn, int moduleId, out int quizId)
         {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+            SqlCommand cmdMod = new SqlCommand(
+                "SELECT Title FROM Module WHERE ModuleID = @ModuleID", conn);
+            cmdMod.Parameters.AddWithValue("@ModuleID", moduleId);
+            string modTitle = cmdMod.ExecuteScalar().ToString();
+
+            SqlCommand ins = new SqlCommand(
+                @"INSERT INTO Quiz (ModuleID, Title, PassMark)
+                  OUTPUT INSERTED.QuizID
+                  VALUES (@ModuleID, @Title, 60)", conn);
+            ins.Parameters.AddWithValue("@ModuleID", moduleId);
+            ins.Parameters.AddWithValue("@Title", modTitle + " quiz");
+            quizId = Convert.ToInt32(ins.ExecuteScalar());
+
+            litQuizTitle.Text = Server.HtmlEncode(modTitle + " quiz");
+            txtPassMark.Text = "60";
+        }
+
+        private void LoadQuestions(int quizId)
+        {
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                SqlCommand cmd = new SqlCommand(
+                    @"SELECT QuestionID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex
+                      FROM Question WHERE QuizID = @QuizID ORDER BY OrderIndex, QuestionID", conn);
+                cmd.Parameters.AddWithValue("@QuizID", quizId);
+                new SqlDataAdapter(cmd).Fill(dt);
+            }
+
+            rptQuestions.DataSource = dt;
+            rptQuestions.DataBind();
+
+            litQuestionCount.Text = dt.Rows.Count.ToString();
+            pnlEmpty.Visible = (dt.Rows.Count == 0);
+            pnlQuestions.Visible = (dt.Rows.Count > 0);
+        }
+
+        protected void btnSavePassMark_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+            if (ViewState["QuizID"] == null) return;
+
+            int quizId = Convert.ToInt32(ViewState["QuizID"]);
+            int passMark = int.Parse(txtPassMark.Text);
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                SqlCommand command;
-                if (ViewState["EditQuestionID"] != null)
-                {
-                    string sql = @"UPDATE Question
-                           SET QuestionText = @QuestionText, OptionA = @OptionA, OptionB = @OptionB, OptionC = @OptionC, OptionD = @OptionD, CorrectAnswer = @CorrectAnswer WHERE QuestionID = @QuestionID";
-
-                    command = new SqlCommand(sql, conn);
-                    command.Parameters.AddWithValue("@QuestionID", ViewState["EditQuestionID"]);
-                }
-                else
-                {
-                    string sql = @"INSERT INTO Question
-                           (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES
-                           (@QuizID, @QuestionText, @OptionA, @OptionB, @OptionC, @OptionD, @CorrectAnswer)";
-
-                    command = new SqlCommand(sql, conn);
-                    command.Parameters.AddWithValue("@QuizID", ViewState["QuizID"]);
-                }
-
-                command.Parameters.AddWithValue("@QuestionText", questionText.Text);
-                command.Parameters.AddWithValue("@OptionA", TextOptionA.Text);
-                command.Parameters.AddWithValue("@OptionB", TextOptionB.Text);
-                command.Parameters.AddWithValue("@OptionC", TextOptionC.Text);
-                command.Parameters.AddWithValue("@OptionD", TextOptionD.Text);
-                command.Parameters.AddWithValue("@CorrectAnswer", CorrectAnswerList.SelectedValue);
-
+                SqlCommand cmd = new SqlCommand(
+                    "UPDATE Quiz SET PassMark = @PassMark WHERE QuizID = @QuizID", conn);
+                cmd.Parameters.AddWithValue("@PassMark", passMark);
+                cmd.Parameters.AddWithValue("@QuizID", quizId);
                 conn.Open();
-                command.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
             }
-            ViewState["EditQuestionID"] = null;
-            AddQuestions.Visible = false;
-            saveQuestion.Text = "Save Question";
-            questionTitle.Text = "Add New Question";
 
-            loadButtonClick(null, null);
+            ShowSuccess("Pass mark updated.");
         }
-        protected void editPassingMarksClick(object sender, EventArgs e)
+
+        protected void btnSaveAll_Click(object sender, EventArgs e)
         {
-            EditPassMarks.Visible = true;
-        }
-        protected void cancelPassingMarksClick(object sender, EventArgs e)
-        {
-            EditPassMarks.Visible = false;
-        }
-        protected void savePassingMarksClick(object sender, EventArgs e)
-        {
-            string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+            if (ViewState["QuizID"] == null) return;
+            int quizId = Convert.ToInt32(ViewState["QuizID"]);
 
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = "UPDATE Quiz SET PassMarkPercent = @PassMark WHERE QuizID = @QuizID";
-                SqlCommand command = new SqlCommand(sql, conn);
-                command.Parameters.AddWithValue("@PassMark", passMarks.Text);
-                command.Parameters.AddWithValue("@QuizID", ViewState["QuizID"]);
-
                 conn.Open();
-                command.ExecuteNonQuery();
+
+                foreach (RepeaterItem item in rptQuestions.Items)
+                {
+                    TextBox qtText = (TextBox)item.FindControl("qtText");
+                    TextBox qtA = (TextBox)item.FindControl("qtA");
+                    TextBox qtB = (TextBox)item.FindControl("qtB");
+                    TextBox qtC = (TextBox)item.FindControl("qtC");
+                    TextBox qtD = (TextBox)item.FindControl("qtD");
+                    RadioButton rbA = (RadioButton)item.FindControl("rbOptA");
+                    RadioButton rbB = (RadioButton)item.FindControl("rbOptB");
+                    RadioButton rbC = (RadioButton)item.FindControl("rbOptC");
+                    RadioButton rbD = (RadioButton)item.FindControl("rbOptD");
+
+                    if (qtText == null || string.IsNullOrEmpty(qtText.Attributes["data-qid"])) continue;
+                    int qid = int.Parse(qtText.Attributes["data-qid"]);
+
+                    string correct = "A";
+                    if (rbB != null && rbB.Checked) correct = "B";
+                    else if (rbC != null && rbC.Checked) correct = "C";
+                    else if (rbD != null && rbD.Checked) correct = "D";
+
+                    SqlCommand cmd = new SqlCommand(
+                        @"UPDATE Question
+                          SET QuestionText = @QT, OptionA = @A, OptionB = @B,
+                              OptionC = @C, OptionD = @D, CorrectOption = @Correct
+                          WHERE QuestionID = @QID", conn);
+                    cmd.Parameters.AddWithValue("@QT", qtText.Text);
+                    cmd.Parameters.AddWithValue("@A", qtA.Text);
+                    cmd.Parameters.AddWithValue("@B", qtB.Text);
+                    cmd.Parameters.AddWithValue("@C", qtC.Text);
+                    cmd.Parameters.AddWithValue("@D", qtD.Text);
+                    cmd.Parameters.AddWithValue("@Correct", correct);
+                    cmd.Parameters.AddWithValue("@QID", qid);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
-            EditPassMarks.Visible = false;
-            loadButtonClick(null, null);
+            ShowSuccess("All question changes saved.");
+            LoadQuestions(quizId);
+        }
+
+        protected void btnAddQuestion_Click(object sender, EventArgs e)
+        {
+            if (ViewState["QuizID"] == null) return;
+            int quizId = Convert.ToInt32(ViewState["QuizID"]);
+
+            int nextOrder = 1;
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+                SqlCommand cmdOrder = new SqlCommand(
+                    "SELECT ISNULL(MAX(OrderIndex), 0) + 1 FROM Question WHERE QuizID = @QuizID", conn);
+                cmdOrder.Parameters.AddWithValue("@QuizID", quizId);
+                nextOrder = Convert.ToInt32(cmdOrder.ExecuteScalar());
+
+                SqlCommand cmd = new SqlCommand(
+                    @"INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex)
+                      VALUES (@QuizID, @QT, @A, @B, @C, @D, 'A', @Order)", conn);
+                cmd.Parameters.AddWithValue("@QuizID", quizId);
+                cmd.Parameters.AddWithValue("@QT", "New question — click to edit.");
+                cmd.Parameters.AddWithValue("@A", "Option A");
+                cmd.Parameters.AddWithValue("@B", "Option B");
+                cmd.Parameters.AddWithValue("@C", "Option C");
+                cmd.Parameters.AddWithValue("@D", "Option D");
+                cmd.Parameters.AddWithValue("@Order", nextOrder);
+                cmd.ExecuteNonQuery();
+            }
+
+            ShowSuccess("New question added — edit it below and save.");
+            LoadQuestions(quizId);
+        }
+
+        protected void rptQuestions_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "DeleteQuestion")
+            {
+                int qid = Convert.ToInt32(e.CommandArgument);
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        "DELETE FROM Question WHERE QuestionID = @QID", conn);
+                    cmd.Parameters.AddWithValue("@QID", qid);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                ShowSuccess("Question deleted.");
+                if (ViewState["QuizID"] != null)
+                {
+                    LoadQuestions(Convert.ToInt32(ViewState["QuizID"]));
+                }
+            }
+        }
+
+        private void ShowSuccess(string msg)
+        {
+            pnlSuccess.Visible = true;
+            pnlError.Visible = false;
+            litSuccess.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ShowError(string msg)
+        {
+            pnlError.Visible = true;
+            pnlSuccess.Visible = false;
+            litError.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ClearAlerts()
+        {
+            pnlSuccess.Visible = false;
+            pnlError.Visible = false;
         }
     }
 }

@@ -7,51 +7,93 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GrowWealth
+namespace GrowWealth.Master
 {
 
 
     public partial class after_landing
     {
-
         /// <summary>
-        /// form1 control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-
         /// <summary>
-        /// litUserName control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgAvatar;
+        /// <summary>
+        /// HeadContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAvatarInitials;
+        /// <summary>
+        /// HeadContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litUserName;
-
         /// <summary>
-        /// lsLogout control.
+        /// HeadContent control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.LoginStatus lsLogout;
-
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
         /// <summary>
-        /// lnkDashboard control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkDashboard;
-
         /// <summary>
-        /// lnkCourses control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkCourses;
-
         /// <summary>
-        /// lnkVirtualLab control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkVirtualLab;
-
         /// <summary>
-        /// lnkProfile control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkProfile;
-
         /// <summary>
-        /// pnlAdminLinks control.
+        /// HeadContent control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlAdminLinks;
     }
 }
+
+

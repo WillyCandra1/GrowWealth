@@ -15,66 +15,93 @@ namespace GrowWealth.Pages.Admin
     {
 
         /// <summary>
-        /// lblMessage control.
+        /// litTotalUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMessage;
+        protected global::System.Web.UI.WebControls.Literal litTotalUsers;
 
         /// <summary>
-        /// lblUsers control.
+        /// litActiveUsers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblUsers;
+        protected global::System.Web.UI.WebControls.Literal litActiveUsers;
 
         /// <summary>
-        /// lblRoles control.
+        /// litTotalCourses control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRoles;
+        protected global::System.Web.UI.WebControls.Literal litTotalCourses;
 
         /// <summary>
-        /// lblSimulations control.
+        /// litTotalModules control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSimulations;
+        protected global::System.Web.UI.WebControls.Literal litTotalModules;
 
         /// <summary>
-        /// lblAdmins control.
+        /// litTotalQuizzes control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblAdmins;
+        protected global::System.Web.UI.WebControls.Literal litTotalQuizzes;
 
         /// <summary>
-        /// gvUsers control.
+        /// litTotalAttempts control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvUsers;
+        protected global::System.Web.UI.WebControls.Literal litTotalAttempts;
 
         /// <summary>
-        /// gvSimulations control.
+        /// litAvgScore control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvSimulations;
+        protected global::System.Web.UI.WebControls.Literal litAvgScore;
+
+        /// <summary>
+        /// rptRecentUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptRecentUsers;
+
+        /// <summary>
+        /// rptFeed control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptFeed;
+
+        /// <summary>
+        /// rptCoursesTable control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptCoursesTable;
     }
 }

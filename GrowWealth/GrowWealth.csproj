@@ -67,7 +67,6 @@
   <ItemGroup>
     <Content Include="Assets\css\style.css" />
     <Content Include="Database\GrowWealthDB.sql" />
-    <Content Include="Master\before_landing.Master" />
     <Content Include="Default.aspx" />
     <Content Include="Pages\Admin\AdminDashboard.aspx" />
     <Content Include="Pages\Admin\ManageCourse.aspx" />
@@ -77,6 +76,7 @@
     <Content Include="Pages\Member\Dashboard.aspx" />
     <Content Include="Pages\Member\ModuleViewer.aspx" />
     <Content Include="Pages\Member\Profile.aspx" />
+    <Content Include="Pages\Member\Quiz.aspx" />
     <Content Include="Pages\Member\VirtualLab.aspx" />
     <Content Include="Pages\Public\Login.aspx" />
     <Content Include="Pages\Public\Register.aspx" />
@@ -91,10 +91,6 @@
     <Compile Include="Master\after_landing.Master.designer.cs">
       <DependentUpon>after_landing.Master</DependentUpon>
     </Compile>
-    <Compile Include="Master\before_landing.Master.cs">
-      <DependentUpon>before_landing.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -108,6 +104,13 @@
     </Compile>
     <Compile Include="Master\Admin.Master.designer.cs">
       <DependentUpon>Admin.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Master\before_landing.Master.cs">
+      <DependentUpon>before_landing.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Master\before_landing.Master.designer.cs">
+      <DependentUpon>before_landing.Master</DependentUpon>
     </Compile>
     <Compile Include="Pages\Admin\AdminDashboard.aspx.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
@@ -165,6 +168,13 @@
     <Compile Include="Pages\Member\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Member\Quiz.aspx.cs">
+      <DependentUpon>Quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Member\Quiz.aspx.designer.cs">
+      <DependentUpon>Quiz.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Member\VirtualLab.aspx.cs">
       <DependentUpon>VirtualLab.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -194,6 +204,7 @@
   <ItemGroup>
     <Content Include="Master\Admin.Master" />
     <Content Include="Master\after_landing.Master" />
+    <Content Include="Master\before_landing.Master" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

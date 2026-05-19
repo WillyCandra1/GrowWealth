@@ -2,151 +2,136 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
+using System.Web.UI;
 
 namespace GrowWealth.Pages.Member
 {
-    public partial class VirtualLab : System.Web.UI.Page
+    public partial class VirtualLab : Page
     {
-        string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (!Request.IsAuthenticated)
             {
-                CreateSimulationTableIfMissing();
-                LoadSimulationHistory();
-            }
-        }
-
-        protected void btnCalculate_Click(object sender, EventArgs e)
-        {
-            decimal initialAmount;
-            decimal monthlyContribution;
-            decimal annualRate;
-            int years;
-
-            bool initialOk = decimal.TryParse(txtInitialAmount.Text, out initialAmount);
-            bool monthlyOk = decimal.TryParse(txtMonthlyContribution.Text, out monthlyContribution);
-            bool rateOk = decimal.TryParse(txtAnnualRate.Text, out annualRate);
-            bool yearsOk = int.TryParse(txtYears.Text, out years);
-
-            if (!initialOk || !monthlyOk || !rateOk || !yearsOk)
-            {
-                lblMessage.Text = "Please enter numbers only.";
+                Response.Redirect("~/Pages/Public/Login.aspx");
                 return;
             }
-
-            if (initialAmount < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0)
-            {
-                lblMessage.Text = "Please enter valid positive values.";
-                return;
-            }
-
-            decimal monthlyRate = annualRate / 100 / 12;
-            int totalMonths = years * 12;
-
-            decimal futureValue = initialAmount;
-
-            for (int month = 1; month <= totalMonths; month++)
-            {
-                futureValue += monthlyContribution;
-                futureValue *= (1 + monthlyRate);
-            }
-
-            decimal totalInvested = initialAmount + (monthlyContribution * totalMonths);
-            decimal interestEarned = futureValue - totalInvested;
-            decimal roi = 0;
-
-            if (totalInvested > 0)
-            {
-                roi = (interestEarned / totalInvested) * 100;
-            }
-
-            lblProjectedValue.Text = "RM " + futureValue.ToString("N0");
-            lblTotalInvested.Text = "RM " + totalInvested.ToString("N0");
-            lblInterestEarned.Text = "RM " + interestEarned.ToString("N0");
-            lblRoi.Text = roi.ToString("N1") + "%";
-
-            SaveSimulation(initialAmount, monthlyContribution, annualRate, years, totalInvested, futureValue, interestEarned, roi);
-
-            lblMessage.Text = "Calculation completed and saved.";
-            LoadSimulationHistory();
         }
 
-        private void CreateSimulationTableIfMissing()
+        private int GetCurrentUserId()
         {
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                string sql = @"
-                    IF OBJECT_ID('InvestmentSimulation', 'U') IS NULL
-                    BEGIN
-                        CREATE TABLE InvestmentSimulation (
-                            SimulationID INT IDENTITY(1,1) PRIMARY KEY,
-                            UserID INT NULL,
-                            InitialAmount DECIMAL(18,2) NOT NULL,
-                            MonthlyContribution DECIMAL(18,2) NOT NULL,
-                            AnnualRate DECIMAL(5,2) NOT NULL,
-                            DurationYears INT NOT NULL,
-                            TotalInvested DECIMAL(18,2) NOT NULL,
-                            ProjectedValue DECIMAL(18,2) NOT NULL,
-                            InterestEarned DECIMAL(18,2) NOT NULL,
-                            ROI DECIMAL(10,2) NOT NULL,
-                            CreatedAt DATETIME2 DEFAULT GETDATE()
-                        )
-                    END";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT UserID FROM [User] WHERE FullName = @Name", conn);
+                cmd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
                 conn.Open();
-                cmd.ExecuteNonQuery();
+                object result = cmd.ExecuteScalar();
+                return (result == null || result == DBNull.Value) ? 0 : Convert.ToInt32(result);
             }
         }
 
-        private void SaveSimulation(decimal initialAmount, decimal monthlyContribution, decimal annualRate, int years,
-            decimal totalInvested, decimal projectedValue, decimal interestEarned, decimal roi)
+        protected void btnCalc_Click(object sender, EventArgs e)
         {
-            using (SqlConnection conn = new SqlConnection(connStr))
+            if (!Page.IsValid) return;
+
+            decimal initial = decimal.Parse(txtInitial.Text, CultureInfo.InvariantCulture);
+            decimal monthly = decimal.Parse(txtMonthly.Text, CultureInfo.InvariantCulture);
+            decimal annualRate = decimal.Parse(txtRate.Text, CultureInfo.InvariantCulture) / 100m;
+            int years = int.Parse(txtYears.Text);
+            int compoundN = int.Parse(ddlCompounding.SelectedValue);
+
+            decimal balance = initial;
+            decimal totalContributed = initial;
+            decimal periodicRate = annualRate / compoundN;
+            int periodsPerYear = compoundN;
+
+            DataTable yearly = new DataTable();
+            yearly.Columns.Add("Year", typeof(int));
+            yearly.Columns.Add("ContributedFmt", typeof(string));
+            yearly.Columns.Add("InterestFmt", typeof(string));
+            yearly.Columns.Add("BalanceFmt", typeof(string));
+
+            decimal cumulativeContribOnly = 0m;
+
+            for (int y = 1; y <= years; y++)
             {
-                string sql = "INSERT INTO InvestmentSimulation " +
-                             "(UserID, InitialAmount, MonthlyContribution, AnnualRate, DurationYears, TotalInvested, ProjectedValue, InterestEarned, ROI) " +
-                             "VALUES (@UserID, @InitialAmount, @MonthlyContribution, @AnnualRate, @DurationYears, @TotalInvested, @ProjectedValue, @InterestEarned, @ROI)";
+                decimal startBalance = balance;
+                decimal yearContrib = 0m;
 
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                for (int p = 0; p < periodsPerYear; p++)
+                {
+                    decimal periodMonthly = (12m / periodsPerYear) * monthly;
+                    balance += periodMonthly;
+                    totalContributed += periodMonthly;
+                    yearContrib += periodMonthly;
 
-                cmd.Parameters.AddWithValue("@UserID", 2);
-                cmd.Parameters.AddWithValue("@InitialAmount", initialAmount);
-                cmd.Parameters.AddWithValue("@MonthlyContribution", monthlyContribution);
-                cmd.Parameters.AddWithValue("@AnnualRate", annualRate);
-                cmd.Parameters.AddWithValue("@DurationYears", years);
-                cmd.Parameters.AddWithValue("@TotalInvested", totalInvested);
-                cmd.Parameters.AddWithValue("@ProjectedValue", projectedValue);
-                cmd.Parameters.AddWithValue("@InterestEarned", interestEarned);
-                cmd.Parameters.AddWithValue("@ROI", roi);
+                    balance = balance * (1 + periodicRate);
+                }
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+                decimal yearInterest = balance - startBalance - yearContrib;
+                cumulativeContribOnly += yearContrib;
+
+                DataRow row = yearly.NewRow();
+                row["Year"] = y;
+                row["ContributedFmt"] = FormatMoney(yearContrib);
+                row["InterestFmt"] = FormatMoney(yearInterest);
+                row["BalanceFmt"] = FormatMoney(balance);
+                yearly.Rows.Add(row);
             }
+
+            decimal interestEarned = balance - totalContributed;
+            decimal roi = (totalContributed == 0) ? 0m : (interestEarned / totalContributed * 100m);
+
+            litFinalValue.Text = FormatMoney(balance);
+            litTotalInvested.Text = FormatMoney(totalContributed);
+            litInterest.Text = FormatMoney(interestEarned);
+            litROI.Text = roi.ToString("0.0");
+
+            rptYearly.DataSource = yearly;
+            rptYearly.DataBind();
+
+            pnlEmpty.Visible = false;
+            pnlResults.Visible = true;
+
+            SaveSimulation(initial, monthly, annualRate * 100m, years, compoundN, balance, interestEarned);
         }
 
-        private void LoadSimulationHistory()
+        private string FormatMoney(decimal value)
         {
-            using (SqlConnection conn = new SqlConnection(connStr))
+            return value.ToString("N2", CultureInfo.InvariantCulture);
+        }
+
+        private void SaveSimulation(decimal initial, decimal monthly, decimal ratePct,
+                                    int years, int compoundN, decimal finalVal, decimal interest)
+        {
+            int userId = GetCurrentUserId();
+            if (userId == 0) return;
+
+            try
             {
-                string sql = "SELECT TOP 10 InitialAmount, MonthlyContribution, AnnualRate, DurationYears, " +
-                             "ProjectedValue, ROI, CreatedAt " +
-                             "FROM InvestmentSimulation " +
-                             "WHERE UserID = @UserID " +
-                             "ORDER BY CreatedAt DESC";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@UserID", 2);
-
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                gvHistory.DataSource = dt;
-                gvHistory.DataBind();
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        @"INSERT INTO InvestmentSimulation
+                          (UserID, InitialAmount, MonthlyContribution, AnnualRate, DurationYears, CompoundingPerYear, FinalValue, InterestEarned, RunAt)
+                          VALUES (@UserID, @Initial, @Monthly, @Rate, @Years, @Compound, @Final, @Interest, GETDATE())", conn);
+                    cmd.Parameters.AddWithValue("@UserID", userId);
+                    cmd.Parameters.AddWithValue("@Initial", initial);
+                    cmd.Parameters.AddWithValue("@Monthly", monthly);
+                    cmd.Parameters.AddWithValue("@Rate", ratePct);
+                    cmd.Parameters.AddWithValue("@Years", years);
+                    cmd.Parameters.AddWithValue("@Compound", compoundN);
+                    cmd.Parameters.AddWithValue("@Final", finalVal);
+                    cmd.Parameters.AddWithValue("@Interest", interest);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
+            catch { }
         }
     }
 }

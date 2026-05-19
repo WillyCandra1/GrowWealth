@@ -1,135 +1,112 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Data;
-using System.Data.SqlClient;
 using System.Configuration;
-
+using System.Data.SqlClient;
 using System.Web.Security;
+using System.Web.UI;
 
 namespace GrowWealth.Pages.Public
 {
     public partial class Login : Page
     {
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Request.IsAuthenticated)
             {
-                Response.Redirect("~/Default.aspx");
+                Response.Redirect("~/Pages/Member/Dashboard.aspx");
             }
         }
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            if (Page.IsValid)
+            if (!Page.IsValid) return;
+
+            string email = txtEmail.Text.Trim().ToLower();
+            string password = txtPassword.Text;
+
+            int userId = 0;
+            int roleId = 0;
+            string fullName = "";
+            string accountStatus = "";
+            bool credentialsOk = false;
+
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                // trim the variable ensuring it clean
-                string email = txtEmail.Text.Trim();
-                string password = txtPassword.Text.Trim();
+                SqlCommand cmd = new SqlCommand(
+                    @"SELECT UserID, FullName, PasswordHash, RoleID, AccountStatus
+                      FROM [User] WHERE Email = @Email", conn);
+                cmd.Parameters.AddWithValue("@Email", email);
+                conn.Open();
 
-                string connStr = ConfigurationManager.ConnectionStrings["GrowWealthDB"].ConnectionString;
-                
-                try 
+                using (SqlDataReader rd = cmd.ExecuteReader())
                 {
-                    using (SqlConnection conn = new SqlConnection(connStr))
+                    if (rd.Read())
                     {
-                        // User Validation
-                        string sql = "SELECT UserID, FullName FROM [User] WHERE Email = @Email AND PasswordHash = @Password AND AccountStatus = 'Active'";
-                        SqlCommand cmd = new SqlCommand(sql, conn);
-                        cmd.Parameters.AddWithValue("@Email", email);
-                        cmd.Parameters.AddWithValue("@Password", password);
-
-                        conn.Open();
-                        SqlDataReader reader = cmd.ExecuteReader();
-
-                        if (reader.Read())
-                        {
-                            // Successful login found
-                            int userId = (int)reader["UserID"];
-                            string fullName = reader["FullName"].ToString();
-                            reader.Close(); // Close reader to allow new command on same connection
-
-                            // Log the success login
-                            LogLoginAttempt(conn, userId, true);
-                            
-                            // 3. Authenticate
-                            FormsAuthentication.SetAuthCookie(fullName, chkRememberMe.Checked);
-                            Response.Redirect("~/Default.aspx");
-                        }
-                        else
-                        {
-                            reader.Close();
-                            // Log fail login attempt
-                            LogLoginAttempt(conn, null, false);
-
-                            // showing error message when already failed
-                            pnlError.Visible = true;
-                            litErrorMsg.Text = "Invalid email or password.";
-                        }
+                        userId = Convert.ToInt32(rd["UserID"]);
+                        fullName = rd["FullName"].ToString();
+                        string storedPw = rd["PasswordHash"].ToString();
+                        roleId = Convert.ToInt32(rd["RoleID"]);
+                        accountStatus = rd["AccountStatus"].ToString();
+                        credentialsOk = (storedPw == password);
                     }
                 }
-                catch (Exception ex)
+
+                if (!credentialsOk)
                 {
-                    pnlError.Visible = true;
-                    litErrorMsg.Text = "An error occurred. Please try again later.";
+                    LogLoginAttempt(conn, userId, false, "Invalid credentials");
+                    ShowError("That email and password combination doesn't match any account.");
+                    return;
                 }
+
+                if (!accountStatus.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                {
+                    LogLoginAttempt(conn, userId, false, "Account suspended");
+                    ShowError("This account is currently suspended. Please contact support.");
+                    return;
+                }
+
+                SqlCommand upd = new SqlCommand(
+                    "UPDATE [User] SET LastLogin = GETDATE() WHERE UserID = @UserID", conn);
+                upd.Parameters.AddWithValue("@UserID", userId);
+                upd.ExecuteNonQuery();
+
+                LogLoginAttempt(conn, userId, true, null);
+            }
+
+            FormsAuthentication.SetAuthCookie(fullName, chkRemember.Checked);
+
+            if (roleId == 1)
+            {
+                Response.Redirect("~/Pages/Admin/AdminDashboard.aspx");
+            }
+            else
+            {
+                Response.Redirect("~/Pages/Member/Dashboard.aspx");
             }
         }
 
-        private void LogLoginAttempt(SqlConnection conn, int? userId, bool isSuccess)
+        private void LogLoginAttempt(SqlConnection conn, int userId, bool success, string failReason)
         {
             try
             {
-                string sql = "INSERT INTO Login_Log (UserID, IpAddress, DeviceInfo, LoginSuccess) " +
-                             "VALUES (@UserID, @Ip, @Device, @Success)";
-                
-                SqlCommand cmd = new SqlCommand(sql, conn);
-
-                // Insert the userid
-                if (userId != null)
-                {
-                    cmd.Parameters.AddWithValue("@UserID", userId);
-                }
-                else
-                {
-                    cmd.Parameters.AddWithValue("@UserID", DBNull.Value);
-                }
-
-                cmd.Parameters.AddWithValue("@Ip", Request.UserHostAddress);
-                
-                // Get browser/device info safely
-                string device = Request.UserAgent;
-                if (device == null)
-                {
-                    device = "Unknown";
-                }
-                else if (device.Length > 255)
-                {
-                    device = device.Substring(0, 252) + "...";
-                }
-                
-                cmd.Parameters.AddWithValue("@Device", device);
-                cmd.Parameters.AddWithValue("@Success", isSuccess);
-
+                SqlCommand cmd = new SqlCommand(
+                    @"INSERT INTO Login_Log (UserID, LoginTime, IPAddress, Success, FailReason)
+                      VALUES (@UserID, GETDATE(), @IP, @Success, @Reason)", conn);
+                cmd.Parameters.AddWithValue("@UserID", userId > 0 ? (object)userId : DBNull.Value);
+                cmd.Parameters.AddWithValue("@IP", Request.UserHostAddress ?? "unknown");
+                cmd.Parameters.AddWithValue("@Success", success);
+                cmd.Parameters.AddWithValue("@Reason", string.IsNullOrEmpty(failReason) ? (object)DBNull.Value : failReason);
                 cmd.ExecuteNonQuery();
             }
-            catch (Exception)
-            {
-                // Silently fail logging so user isn't blocked from the app
-            }
+            catch { }
         }
 
-        protected void chkRememberMe_CheckedChanged(object sender, EventArgs e)
+        private void ShowError(string msg)
         {
-
-        }
-
-        protected void txtEmail_TextChanged(object sender, EventArgs e)
-        {
-
+            pnlError.Visible = true;
+            litError.Text = Server.HtmlEncode(msg);
         }
     }
 }

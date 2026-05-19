@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Web.Security;
 using System.Web.UI;
 
@@ -13,11 +15,16 @@ namespace GrowWealth.Pages.Member
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Safety: master page enforces auth, but double-check here.
             if (!Request.IsAuthenticated)
             {
                 Response.Redirect("~/Pages/Public/Login.aspx");
                 return;
+            }
+
+            if (Master != null)
+            {
+                System.Web.UI.HtmlControls.HtmlForm form = (System.Web.UI.HtmlControls.HtmlForm)Master.FindControl("form1");
+                if (form != null) form.Enctype = "multipart/form-data";
             }
 
             if (!IsPostBack)
@@ -26,238 +33,285 @@ namespace GrowWealth.Pages.Member
             }
         }
 
-        /// <summary>
-        /// Fetches the current user's row from [User] and fills the form fields.
-        /// </summary>
-        private void LoadProfile()
+        private int GetCurrentUserId()
         {
-            string sql = @"
-                SELECT UserID, FullName, Email, AccountStatus, CreatedAt
-                FROM [User]
-                WHERE FullName = @Name";
-
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                SqlCommand cmd = new SqlCommand(sql, conn);
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT UserID FROM [User] WHERE FullName = @Name", conn);
                 cmd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
-
                 conn.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        string fullName = reader["FullName"].ToString();
-                        string email = reader["Email"].ToString();
-                        string status = reader["AccountStatus"].ToString();
-                        DateTime createdAt = Convert.ToDateTime(reader["CreatedAt"]);
-
-                        // Display section (read-only)
-                        litFullName.Text = Server.HtmlEncode(fullName);
-                        litEmailDisplay.Text = Server.HtmlEncode(email);
-                        litMemberSince.Text = createdAt.ToString("MMMM yyyy");
-                        litInitials.Text = GetInitials(fullName);
-                        litStatus.Text = status;
-
-                        if (string.Equals(status, "Suspended", StringComparison.OrdinalIgnoreCase))
-                        {
-                            badgeStatus.Attributes["class"] = "status-badge suspended";
-                        }
-
-                        // Editable section (form fields)
-                        txtFullName.Text = fullName;
-                        txtEmail.Text = email;
-                    }
-                    else
-                    {
-                        // Couldn't load — sign out cleanly.
-                        FormsAuthentication.SignOut();
-                        Response.Redirect("~/Pages/Public/Login.aspx");
-                    }
-                }
+                object result = cmd.ExecuteScalar();
+                return (result == null || result == DBNull.Value) ? 0 : Convert.ToInt32(result);
             }
         }
 
-        /// <summary>
-        /// Returns 1-2 uppercase initials from a full name, e.g. "Ahmad Zaki" → "AZ".
-        /// </summary>
-        private string GetInitials(string fullName)
+        private void LoadProfile()
+        {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
+            {
+                FormsAuthentication.SignOut();
+                Response.Redirect("~/Pages/Public/Login.aspx");
+                return;
+            }
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                SqlCommand cmd = new SqlCommand(
+                    @"SELECT FullName, Email, ProfilePicture, AccountStatus, CreatedAt
+                      FROM [User] WHERE UserID = @UserID", conn);
+                cmd.Parameters.AddWithValue("@UserID", userId);
+                conn.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.Read())
+                    {
+                        string fullName = rd["FullName"].ToString();
+                        string email = rd["Email"].ToString();
+                        string profilePic = rd["ProfilePicture"] == DBNull.Value ? "" : rd["ProfilePicture"].ToString();
+                        string status = rd["AccountStatus"].ToString();
+                        DateTime created = Convert.ToDateTime(rd["CreatedAt"]);
+
+                        txtFullName.Text = fullName;
+                        txtEmail.Text = email;
+                        litFullNameDisplay.Text = Server.HtmlEncode(fullName);
+                        litEmailDisplay.Text = Server.HtmlEncode(email);
+                        litMemberSince.Text = created.ToString("MMM yyyy");
+                        litStatus.Text = status;
+
+                        if (status.Equals("Suspended", StringComparison.OrdinalIgnoreCase))
+                        {
+                            badgeStatus.Attributes["class"] = "status-pill suspended";
+                        }
+
+                        if (!string.IsNullOrEmpty(profilePic))
+                        {
+                            imgProfile.ImageUrl = ResolveUrl(profilePic);
+                            imgProfile.Visible = true;
+                        }
+                        else
+                        {
+                            litInitials.Text = BuildInitials(fullName);
+                        }
+                    }
+                }
+            }
+
+            LoadStats(userId);
+        }
+
+        private void LoadStats(int userId)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+
+                SqlCommand c1 = new SqlCommand(
+                    "SELECT COUNT(*) FROM Enrollment WHERE UserID = @UserID", conn);
+                c1.Parameters.AddWithValue("@UserID", userId);
+                litStatCourses.Text = c1.ExecuteScalar().ToString();
+
+                SqlCommand c2 = new SqlCommand(
+                    "SELECT COUNT(*) FROM UserProgress WHERE UserID = @UserID AND IsCompleted = 1", conn);
+                c2.Parameters.AddWithValue("@UserID", userId);
+                litStatModules.Text = c2.ExecuteScalar().ToString();
+
+                SqlCommand c3 = new SqlCommand(
+                    @"SELECT AVG(CAST(Score AS FLOAT) * 100.0 / NULLIF(TotalQuestions, 0))
+                      FROM Quiz_Attempt WHERE UserID = @UserID", conn);
+                c3.Parameters.AddWithValue("@UserID", userId);
+                object avg = c3.ExecuteScalar();
+                litStatScore.Text = (avg == null || avg == DBNull.Value) ? "0" : Convert.ToInt32(avg).ToString();
+            }
+        }
+
+        private string BuildInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "?";
             string[] parts = fullName.Trim().Split(' ');
-            if (parts.Length == 1)
-                return parts[0].Substring(0, 1).ToUpper();
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
             return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
 
-        /// <summary>
-        /// Saves edits to FullName / Email, and optionally updates the password
-        /// if all three password fields are filled in.
-        /// </summary>
         protected void btnSave_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
 
+            int userId = GetCurrentUserId();
+            if (userId == 0) return;
+
             string newFullName = txtFullName.Text.Trim();
-            string newEmail = txtEmail.Text.Trim();
-            string currentPassword = txtCurrentPassword.Text;
-            string newPassword = txtNewPassword.Text;
+            string newEmail = txtEmail.Text.Trim().ToLower();
 
-            // Detect password change intent.
-            bool wantsPasswordChange = !string.IsNullOrEmpty(newPassword) ||
-                                       !string.IsNullOrEmpty(currentPassword);
-
-            if (wantsPasswordChange)
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                if (string.IsNullOrEmpty(currentPassword))
+                conn.Open();
+
+                SqlCommand cmdDup = new SqlCommand(
+                    "SELECT COUNT(*) FROM [User] WHERE Email = @Email AND UserID <> @UserID", conn);
+                cmdDup.Parameters.AddWithValue("@Email", newEmail);
+                cmdDup.Parameters.AddWithValue("@UserID", userId);
+                int dupCount = Convert.ToInt32(cmdDup.ExecuteScalar());
+                if (dupCount > 0)
                 {
-                    ShowError("Please enter your current password to change it.");
+                    ShowError("That email is already used by another account.");
                     return;
                 }
-                if (string.IsNullOrEmpty(newPassword))
+
+                string profilePicPath = null;
+                if (fuProfilePic.HasFile)
                 {
-                    ShowError("Please enter a new password.");
-                    return;
-                }
-            }
-
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connStr))
-                {
-                    conn.Open();
-
-                    // 1. Check the email isn't already used by a DIFFERENT user.
-                    SqlCommand checkEmail = new SqlCommand(
-                        "SELECT COUNT(*) FROM [User] WHERE Email = @Email AND FullName <> @OldName",
-                        conn);
-                    checkEmail.Parameters.AddWithValue("@Email", newEmail);
-                    checkEmail.Parameters.AddWithValue("@OldName", Context.User.Identity.Name);
-
-                    if (Convert.ToInt32(checkEmail.ExecuteScalar()) > 0)
+                    string ext = Path.GetExtension(fuProfilePic.FileName).ToLower();
+                    if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
                     {
-                        ShowError("That email address is already in use.");
+                        ShowError("Profile picture must be a JPG or PNG file.");
+                        return;
+                    }
+                    if (fuProfilePic.PostedFile.ContentLength > 2 * 1024 * 1024)
+                    {
+                        ShowError("Profile picture must be 2 MB or smaller.");
                         return;
                     }
 
-                    // 2. If user wants to change password, verify current password matches.
-                    if (wantsPasswordChange)
+                    string folder = Server.MapPath("~/Assets/images/profiles/");
+                    if (!Directory.Exists(folder))
                     {
-                        SqlCommand checkPwd = new SqlCommand(
-                            "SELECT COUNT(*) FROM [User] " +
-                            "WHERE FullName = @Name AND PasswordHash = @CurPwd", conn);
-                        checkPwd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
-                        checkPwd.Parameters.AddWithValue("@CurPwd", currentPassword);
-
-                        if (Convert.ToInt32(checkPwd.ExecuteScalar()) == 0)
-                        {
-                            ShowError("Current password is incorrect.");
-                            return;
-                        }
+                        Directory.CreateDirectory(folder);
                     }
 
-                    // 3. Run the UPDATE.
-                    string updateSql;
-                    if (wantsPasswordChange)
+                    string fileName = "user_" + userId + "_" + DateTime.Now.Ticks + ext;
+                    string fullPath = Path.Combine(folder, fileName);
+                    fuProfilePic.SaveAs(fullPath);
+                    profilePicPath = "~/Assets/images/profiles/" + fileName;
+                }
+
+                bool wantsPasswordChange =
+                    !string.IsNullOrEmpty(txtCurrentPassword.Text) ||
+                    !string.IsNullOrEmpty(txtNewPassword.Text) ||
+                    !string.IsNullOrEmpty(txtConfirmPassword.Text);
+
+                if (wantsPasswordChange)
+                {
+                    if (string.IsNullOrEmpty(txtCurrentPassword.Text) ||
+                        string.IsNullOrEmpty(txtNewPassword.Text) ||
+                        string.IsNullOrEmpty(txtConfirmPassword.Text))
                     {
-                        updateSql = "UPDATE [User] SET FullName = @NewName, Email = @Email, " +
-                                    "PasswordHash = @NewPwd WHERE FullName = @OldName";
+                        ShowError("Fill in all three password fields to change your password.");
+                        return;
                     }
-                    else
+
+                    SqlCommand cmdPw = new SqlCommand(
+                        "SELECT PasswordHash FROM [User] WHERE UserID = @UserID", conn);
+                    cmdPw.Parameters.AddWithValue("@UserID", userId);
+                    string storedPw = cmdPw.ExecuteScalar().ToString();
+                    if (storedPw != txtCurrentPassword.Text)
                     {
-                        updateSql = "UPDATE [User] SET FullName = @NewName, Email = @Email " +
-                                    "WHERE FullName = @OldName";
+                        ShowError("Current password is incorrect.");
+                        return;
                     }
 
-                    SqlCommand update = new SqlCommand(updateSql, conn);
-                    update.Parameters.AddWithValue("@NewName", newFullName);
-                    update.Parameters.AddWithValue("@Email", newEmail);
-                    update.Parameters.AddWithValue("@OldName", Context.User.Identity.Name);
-                    if (wantsPasswordChange)
+                    SqlCommand cmdUpdAll = new SqlCommand(
+                        @"UPDATE [User]
+                          SET FullName = @FullName, Email = @Email, PasswordHash = @Pw" +
+                          (profilePicPath != null ? ", ProfilePicture = @Pic" : "") +
+                          " WHERE UserID = @UserID", conn);
+                    cmdUpdAll.Parameters.AddWithValue("@FullName", newFullName);
+                    cmdUpdAll.Parameters.AddWithValue("@Email", newEmail);
+                    cmdUpdAll.Parameters.AddWithValue("@Pw", txtNewPassword.Text);
+                    cmdUpdAll.Parameters.AddWithValue("@UserID", userId);
+                    if (profilePicPath != null)
                     {
-                        update.Parameters.AddWithValue("@NewPwd", newPassword);
+                        cmdUpdAll.Parameters.AddWithValue("@Pic", profilePicPath);
                     }
-
-                    int rowsAffected = update.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
+                    cmdUpdAll.ExecuteNonQuery();
+                }
+                else
+                {
+                    SqlCommand cmdUpd = new SqlCommand(
+                        @"UPDATE [User]
+                          SET FullName = @FullName, Email = @Email" +
+                          (profilePicPath != null ? ", ProfilePicture = @Pic" : "") +
+                          " WHERE UserID = @UserID", conn);
+                    cmdUpd.Parameters.AddWithValue("@FullName", newFullName);
+                    cmdUpd.Parameters.AddWithValue("@Email", newEmail);
+                    cmdUpd.Parameters.AddWithValue("@UserID", userId);
+                    if (profilePicPath != null)
                     {
-                        // If the FullName changed, refresh the auth cookie so the
-                        // top bar and other lookups still work.
-                        if (newFullName != Context.User.Identity.Name)
-                        {
-                            FormsAuthentication.SetAuthCookie(newFullName, false);
-                        }
-
-                        // Clear the password fields so they don't linger on screen.
-                        txtCurrentPassword.Text = "";
-                        txtNewPassword.Text = "";
-                        txtConfirmPassword.Text = "";
-
-                        ShowSuccess("Profile updated successfully.");
-
-                        // Reload the display section using the new values.
-                        LoadProfile();
+                        cmdUpd.Parameters.AddWithValue("@Pic", profilePicPath);
                     }
-                    else
-                    {
-                        ShowError("Update failed. Please try again.");
-                    }
+                    cmdUpd.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
+
+            if (Context.User.Identity.Name != newFullName)
             {
-                // In production you'd log the exception. For coursework we show a generic message.
-                ShowError("An error occurred: " + ex.Message);
+                FormsAuthentication.SetAuthCookie(newFullName, false);
             }
+
+            txtCurrentPassword.Text = "";
+            txtNewPassword.Text = "";
+            txtConfirmPassword.Text = "";
+
+            ShowSuccess("Your profile has been updated.");
+            LoadProfile();
         }
 
-        /// <summary>
-        /// Permanently deletes the user's account.
-        /// CASCADE constraints in the DB will remove enrollments, progress, attempts, etc.
-        /// </summary>
         protected void btnDelete_Click(object sender, EventArgs e)
         {
-            try
+            int userId = GetCurrentUserId();
+            if (userId == 0) return;
+
+            using (SqlConnection conn = new SqlConnection(connStr))
             {
-                using (SqlConnection conn = new SqlConnection(connStr))
+                conn.Open();
+                SqlTransaction tx = conn.BeginTransaction();
+                try
                 {
-                    SqlCommand cmd = new SqlCommand(
-                        "DELETE FROM [User] WHERE FullName = @Name", conn);
-                    cmd.Parameters.AddWithValue("@Name", Context.User.Identity.Name);
-
-                    conn.Open();
-                    int rowsAffected = cmd.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
+                    string[] cleanup = new string[]
                     {
-                        FormsAuthentication.SignOut();
-                        Session.Abandon();
-                        Response.Redirect("~/Default.aspx");
-                    }
-                    else
+                        "DELETE FROM Quiz_Attempt WHERE UserID = @UserID",
+                        "DELETE FROM UserProgress WHERE UserID = @UserID",
+                        "DELETE FROM Enrollment WHERE UserID = @UserID",
+                        "DELETE FROM Login_Log WHERE UserID = @UserID",
+                        "DELETE FROM InvestmentSimulation WHERE UserID = @UserID",
+                        "DELETE FROM [User] WHERE UserID = @UserID"
+                    };
+
+                    foreach (string sql in cleanup)
                     {
-                        ShowError("Could not delete account. Please try again.");
+                        SqlCommand cmd = new SqlCommand(sql, conn, tx);
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                        cmd.ExecuteNonQuery();
                     }
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    ShowError("Could not delete your account. Please try again.");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                ShowError("An error occurred: " + ex.Message);
-            }
-        }
 
-        private void ShowError(string msg)
-        {
-            pnlSuccess.Visible = false;
-            pnlError.Visible = true;
-            litErrorMsg.Text = Server.HtmlEncode(msg);
+            FormsAuthentication.SignOut();
+            Session.Abandon();
+            Response.Redirect("~/Default.aspx");
         }
 
         private void ShowSuccess(string msg)
         {
-            pnlError.Visible = false;
             pnlSuccess.Visible = true;
+            pnlError.Visible = false;
             litSuccessMsg.Text = Server.HtmlEncode(msg);
+        }
+
+        private void ShowError(string msg)
+        {
+            pnlError.Visible = true;
+            pnlSuccess.Visible = false;
+            litErrorMsg.Text = Server.HtmlEncode(msg);
         }
     }
 }

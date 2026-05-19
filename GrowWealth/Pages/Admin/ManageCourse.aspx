@@ -1,211 +1,397 @@
 ﻿<%@ Page Title="Manage Courses" Language="C#" MasterPageFile="~/Master/Admin.Master" AutoEventWireup="true" CodeBehind="ManageCourse.aspx.cs" Inherits="GrowWealth.Pages.Admin.ManageCourse" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
-<style>
-    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-    .page-header h1 { font-size: 1.5rem; margin: 0; }
+    <style>
+        .page-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-head h1 { font-size: 2.2rem; margin-bottom: 0.3rem; }
+        .page-head p { color: var(--gw-ink-muted); margin: 0; }
 
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
-    .stat-card .s-label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.4rem; }
-    .stat-card .s-value { font-size: 1.75rem; font-weight: 600; color: var(--primary); }
+        .btn-primary {
+            background-color: var(--gw-ink);
+            color: var(--gw-paper);
+            border: 1px solid var(--gw-ink);
+            padding: 0.65rem 1.3rem;
+            border-radius: 8px;
+            font-family: var(--gw-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .btn-primary:hover { background-color: var(--gw-accent-dark); border-color: var(--gw-accent-dark); }
 
-    .toolbar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .toolbar .form-control { flex: 1; min-width: 160px; margin: 0; }
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--gw-ink);
+            border: 1px solid var(--gw-line);
+            padding: 0.65rem 1.3rem;
+            border-radius: 8px;
+            font-family: var(--gw-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .btn-secondary:hover { border-color: var(--gw-ink); }
 
-    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .admin-table thead { background: var(--bg); }
-    .admin-table th { text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
-    .admin-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .admin-table tr:last-child td { border-bottom: none; }
-    .admin-table tr:hover td { background: var(--bg); }
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.92rem;
+            border: 1px solid;
+        }
+        .alert-success { background-color: var(--gw-accent-soft); color: var(--gw-accent-dark); border-color: #c0dccc; }
+        .alert-danger { background-color: var(--gw-rose-soft); color: var(--gw-rose); border-color: #e8c4be; }
 
-    .sbadge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
-    .sbadge-published { background: #dcfce7; color: #15803d; }
-    .sbadge-draft     { background: #fef9c3; color: #854d0e; }
-    .sbadge-archived  { background: #f1f1f1; color: #555; }
+        .panel {
+            background-color: var(--gw-surface);
+            border: 1px solid var(--gw-line);
+            border-radius: 14px;
+            padding: 1.75rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .panel h2 { font-size: 1.25rem; margin-bottom: 0.3rem; }
+        .panel .panel-subtitle { color: var(--gw-ink-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
-    .action-cell { display: flex; gap: 0.5rem; }
-    .btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; }
-    .btn-sm:hover { background: var(--bg); }
-    .btn-sm-danger { color: #b91c1c; border-color: #fecaca; }
-    .btn-sm-danger:hover { background: #fee2e2; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            text-align: left;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gw-ink-muted);
+            font-weight: 600;
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid var(--gw-line);
+        }
+        .data-table td {
+            padding: 0.95rem 0.85rem;
+            border-bottom: 1px solid var(--gw-line-soft);
+            font-size: 0.92rem;
+            vertical-align: middle;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background-color: var(--gw-paper); }
 
-    .alert-success { background: var(--success); color: var(--success-text); border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 1rem; display: block; }
-    .alert-error   { background: var(--error); color: var(--error-text); border: 1px solid #fecaca; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 1rem; display: block; }
+        .pill {
+            display: inline-block;
+            padding: 0.22rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .pill.beginner { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
+        .pill.intermediate { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
+        .pill.advanced { background-color: var(--gw-rose-soft); color: var(--gw-rose); }
+        .pill.active { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
+        .pill.inactive { background-color: var(--gw-line-soft); color: var(--gw-ink-muted); }
 
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal-panel { background: var(--surface); border-radius: 12px; padding: 2rem; width: 480px; max-width: 95vw; box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
-    .modal-panel h2 { font-size: 1.125rem; margin-bottom: 1.25rem; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; }
-    .empty-row { text-align: center; padding: 2rem; color: var(--text-secondary); font-size: 0.875rem; }
-</style>
+        .row-actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
+        .btn-icon {
+            background-color: transparent;
+            border: 1px solid var(--gw-line);
+            color: var(--gw-ink-soft);
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            font-family: var(--gw-sans);
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .btn-icon:hover { background-color: var(--gw-ink); color: var(--gw-paper); border-color: var(--gw-ink); }
+        .btn-icon.danger:hover { background-color: var(--gw-rose); border-color: var(--gw-rose); color: white; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .form-group { margin-bottom: 1.1rem; }
+        .form-label {
+            display: block;
+            margin-bottom: 0.45rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--gw-ink-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .form-input-block {
+            width: 100%;
+            padding: 0.7rem 0.95rem;
+            border: 1px solid var(--gw-line);
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-family: var(--gw-sans);
+            color: var(--gw-ink);
+            background-color: var(--gw-surface);
+            outline: none;
+            box-sizing: border-box;
+        }
+        .form-input-block:focus { border-color: var(--gw-accent); box-shadow: 0 0 0 3px var(--gw-accent-soft); }
+        textarea.form-input-block { min-height: 90px; resize: vertical; font-family: var(--gw-sans); }
+        textarea.module-content { min-height: 200px; font-family: 'Courier New', monospace; font-size: 0.85rem; }
+
+        .checkbox-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.92rem; }
+        .checkbox-row input { width: 17px; height: 17px; accent-color: var(--gw-accent); }
+
+        .actions-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gw-line-soft);
+        }
+
+        .text-danger { color: var(--gw-rose); font-size: 0.8rem; margin-top: 0.25rem; display: block; font-weight: 500; }
+
+        .module-block {
+            background-color: var(--gw-paper);
+            border: 1px solid var(--gw-line-soft);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .module-block .module-num {
+            width: 28px;
+            height: 28px;
+            background-color: var(--gw-ink);
+            color: var(--gw-paper);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--gw-serif);
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .module-block .module-info { flex: 1; }
+        .module-block .module-info strong { color: var(--gw-ink); }
+        .module-block .module-meta { color: var(--gw-ink-muted); font-size: 0.82rem; }
+
+        .empty-row td {
+            text-align: center;
+            color: var(--gw-ink-muted);
+            font-style: italic;
+            padding: 2rem 0;
+        }
+
+        @media (max-width: 720px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
-    <div class="page-header">
-        <h1 id="lbl_ManageCourses">Manage Courses</h1>
-        <button type="button" class="btn btn-primary" onclick="openModal('addModal')" id="btn_AddCourse">+ Add Course</button>
+    <div class="page-head">
+        <div>
+            <h1>Manage courses</h1>
+            <p>Create, edit, and organise courses and their modules.</p>
+        </div>
+        <asp:Button ID="btnNewCourse" runat="server" Text="+ New course"
+            CssClass="btn-primary" OnClick="btnNewCourse_Click" CausesValidation="false" />
     </div>
 
-    <asp:Label ID="lbl_Message" runat="server" Visible="false" />
+    <asp:Panel ID="pnlSuccess" runat="server" Visible="false" CssClass="alert alert-success">
+        <asp:Literal ID="litSuccess" runat="server"></asp:Literal>
+    </asp:Panel>
 
-    <div class="stat-grid">
-        <div class="stat-card">
-            <div class="s-label">Total</div>
-            <div class="s-value"><asp:Label ID="lbl_TotalCount" runat="server" Text="0" /></div>
-        </div>
-        <div class="stat-card">
-            <div class="s-label">Published</div>
-            <div class="s-value"><asp:Label ID="lbl_PublishedCount" runat="server" Text="0" /></div>
-        </div>
-        <div class="stat-card">
-            <div class="s-label">Draft</div>
-            <div class="s-value"><asp:Label ID="lbl_DraftCount" runat="server" Text="0" /></div>
-        </div>
-        <div class="stat-card">
-            <div class="s-label">Archived</div>
-            <div class="s-value"><asp:Label ID="lbl_ArchivedCount" runat="server" Text="0" /></div>
-        </div>
-    </div>
+    <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger">
+        <asp:Literal ID="litError" runat="server"></asp:Literal>
+    </asp:Panel>
 
-    <div class="toolbar">
-        <asp:TextBox ID="txt_Search" runat="server" CssClass="form-control" placeholder="Search courses..." />
-        <asp:DropDownList ID="ddl_StatusFilter" runat="server" CssClass="form-control" style="flex:0 0 auto;width:auto;">
-            <asp:ListItem Text="All Status" Value="" />
-            <asp:ListItem Text="Published"  Value="Published" />
-            <asp:ListItem Text="Draft"      Value="Draft" />
-            <asp:ListItem Text="Archived"   Value="Archived" />
-        </asp:DropDownList>
-        <asp:Button ID="btn_Search" runat="server" Text="Search" CssClass="btn btn-outline" OnClick="btn_Search_Click" />
-    </div>
+    <asp:Panel ID="pnlCourseForm" runat="server" Visible="false" CssClass="panel">
+        <h2><asp:Literal ID="litCourseFormHeader" runat="server">New course</asp:Literal></h2>
+        <p class="panel-subtitle">Provide the title, description, and difficulty for this course.</p>
 
-    <div class="table-wrap">
-        <asp:GridView ID="gv_Courses" runat="server" AutoGenerateColumns="false"
-            DataKeyNames="CourseID" OnRowCommand="gv_Courses_RowCommand"
-            CssClass="admin-table" GridLines="None" Width="100%">
-            <Columns>
-                <asp:BoundField DataField="CourseID"        HeaderText="ID" />
-                <asp:BoundField DataField="Title"           HeaderText="Course Title" />
-                <asp:BoundField DataField="DifficultyLevel" HeaderText="Difficulty" />
-                <asp:BoundField DataField="EnrollCount"     HeaderText="Enrolled" />
-                <asp:TemplateField HeaderText="Status">
-                    <ItemTemplate>
-                        <span class="sbadge sbadge-<%# Eval("Status").ToString().ToLower() %>"><%# Eval("Status") %></span>
-                    </ItemTemplate>
-                </asp:TemplateField>
-                <asp:BoundField DataField="CreatedAt" HeaderText="Created" DataFormatString="{0:dd MMM yyyy}" />
-                <asp:TemplateField HeaderText="Actions">
-                    <ItemTemplate>
-                        <div class="action-cell">
-                            <asp:LinkButton runat="server" CommandName="EditCourse"
-                                CommandArgument='<%# Eval("CourseID") %>'
-                                CssClass="btn-sm">Edit</asp:LinkButton>
-                            <asp:LinkButton runat="server" CommandName="DeleteCourse"
-                                CommandArgument='<%# Eval("CourseID") %>'
-                                CssClass="btn-sm btn-sm-danger"
-                                OnClientClick="return confirm('Delete this course?');">Delete</asp:LinkButton>
-                        </div>
-                    </ItemTemplate>
-                </asp:TemplateField>
-            </Columns>
-            <EmptyDataTemplate><div class="empty-row">No courses found.</div></EmptyDataTemplate>
-        </asp:GridView>
-    </div>
-
-    <%-- Add Course Modal --%>
-    <div class="modal-overlay" id="addModal">
-        <div class="modal-panel">
-            <h2>Add New Course</h2>
+        <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">Title *</label>
-                <asp:TextBox ID="txt_Title" runat="server" CssClass="form-control" placeholder="e.g. Introduction to Investing" />
+                <label class="form-label">Title</label>
+                <asp:TextBox ID="txtTitle" runat="server" CssClass="form-input-block"></asp:TextBox>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtTitle"
+                    ErrorMessage="Title is required" CssClass="text-danger" Display="Dynamic"
+                    ValidationGroup="Course"></asp:RequiredFieldValidator>
             </div>
+
             <div class="form-group">
-                <label class="form-label">Description</label>
-                <asp:TextBox ID="txt_Description" runat="server" TextMode="MultiLine" CssClass="form-control" style="min-height:80px;resize:vertical;" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Difficulty Level</label>
-                <asp:DropDownList ID="ddl_Difficulty" runat="server" CssClass="form-control">
-                    <asp:ListItem Text="Beginner"     Value="Beginner" />
-                    <asp:ListItem Text="Intermediate" Value="Intermediate" />
-                    <asp:ListItem Text="Advanced"     Value="Advanced" />
+                <label class="form-label">Difficulty</label>
+                <asp:DropDownList ID="ddlDifficulty" runat="server" CssClass="form-input-block">
+                    <asp:ListItem Value="Beginner" Text="Beginner" Selected="True"></asp:ListItem>
+                    <asp:ListItem Value="Intermediate" Text="Intermediate"></asp:ListItem>
+                    <asp:ListItem Value="Advanced" Text="Advanced"></asp:ListItem>
                 </asp:DropDownList>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <asp:TextBox ID="txtDescription" runat="server" TextMode="MultiLine"
+                CssClass="form-input-block"></asp:TextBox>
+            <asp:RequiredFieldValidator runat="server" ControlToValidate="txtDescription"
+                ErrorMessage="Description is required" CssClass="text-danger" Display="Dynamic"
+                ValidationGroup="Course"></asp:RequiredFieldValidator>
+        </div>
+
+        <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">Thumbnail URL</label>
-                <asp:TextBox ID="txt_Thumbnail" runat="server" CssClass="form-control" placeholder="https://..." />
+                <label class="form-label">Estimated total hours</label>
+                <asp:TextBox ID="txtHours" runat="server" CssClass="form-input-block" Text="6"></asp:TextBox>
+                <asp:RangeValidator runat="server" ControlToValidate="txtHours" Type="Integer"
+                    MinimumValue="1" MaximumValue="200"
+                    ErrorMessage="Enter a number between 1 and 200"
+                    CssClass="text-danger" Display="Dynamic" ValidationGroup="Course"></asp:RangeValidator>
             </div>
+
             <div class="form-group">
                 <label class="form-label">Status</label>
-                <asp:DropDownList ID="ddl_Status" runat="server" CssClass="form-control">
-                    <asp:ListItem Text="Draft"     Value="Draft" />
-                    <asp:ListItem Text="Published" Value="Published" />
-                    <asp:ListItem Text="Archived"  Value="Archived" />
-                </asp:DropDownList>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="closeModal('addModal')">Cancel</button>
-                <asp:Button ID="btn_AddCourseSubmit" runat="server" Text="Save Course" CssClass="btn btn-primary" OnClick="btn_AddCourse_Click" />
+                <div class="checkbox-row" style="margin-top: 0.7rem;">
+                    <asp:CheckBox ID="chkActive" runat="server" Checked="true"
+                        Text="Course is published and visible to members" />
+                </div>
             </div>
         </div>
-    </div>
 
-    <%-- Edit Course Modal --%>
-    <div class="modal-overlay" id="editModal">
-        <div class="modal-panel">
-            <h2>Edit Course</h2>
-            <asp:HiddenField ID="hf_EditCourseID" runat="server" />
+        <div class="actions-row">
+            <asp:Button ID="btnSaveCourse" runat="server" Text="Save course"
+                CssClass="btn-primary" OnClick="btnSaveCourse_Click" ValidationGroup="Course" />
+            <asp:Button ID="btnCancelCourse" runat="server" Text="Cancel"
+                CssClass="btn-secondary" OnClick="btnCancelCourse_Click" CausesValidation="false" />
+        </div>
+    </asp:Panel>
+
+    <asp:Panel ID="pnlModuleForm" runat="server" Visible="false" CssClass="panel">
+        <h2><asp:Literal ID="litModuleFormHeader" runat="server">New module</asp:Literal></h2>
+        <p class="panel-subtitle">Adding to <strong><asp:Literal ID="litModuleCourseName" runat="server"></asp:Literal></strong>.</p>
+
+        <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">Title *</label>
-                <asp:TextBox ID="txt_EditTitle" runat="server" CssClass="form-control" />
+                <label class="form-label">Module title</label>
+                <asp:TextBox ID="txtModuleTitle" runat="server" CssClass="form-input-block"></asp:TextBox>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtModuleTitle"
+                    ErrorMessage="Title is required" CssClass="text-danger" Display="Dynamic"
+                    ValidationGroup="Module"></asp:RequiredFieldValidator>
             </div>
+
             <div class="form-group">
-                <label class="form-label">Description</label>
-                <asp:TextBox ID="txt_EditDescription" runat="server" TextMode="MultiLine" CssClass="form-control" style="min-height:80px;resize:vertical;" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Difficulty Level</label>
-                <asp:DropDownList ID="ddl_EditDifficulty" runat="server" CssClass="form-control">
-                    <asp:ListItem Text="Beginner"     Value="Beginner" />
-                    <asp:ListItem Text="Intermediate" Value="Intermediate" />
-                    <asp:ListItem Text="Advanced"     Value="Advanced" />
-                </asp:DropDownList>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Thumbnail URL</label>
-                <asp:TextBox ID="txt_EditThumbnail" runat="server" CssClass="form-control" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Status</label>
-                <asp:DropDownList ID="ddl_EditStatus" runat="server" CssClass="form-control">
-                    <asp:ListItem Text="Draft"     Value="Draft" />
-                    <asp:ListItem Text="Published" Value="Published" />
-                    <asp:ListItem Text="Archived"  Value="Archived" />
-                </asp:DropDownList>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
-                <asp:Button ID="btn_UpdateCourse" runat="server" Text="Update Course" CssClass="btn btn-primary" OnClick="btn_UpdateCourse_Click" />
+                <label class="form-label">Reading time (minutes)</label>
+                <asp:TextBox ID="txtModuleMinutes" runat="server" CssClass="form-input-block" Text="15"></asp:TextBox>
+                <asp:RangeValidator runat="server" ControlToValidate="txtModuleMinutes" Type="Integer"
+                    MinimumValue="1" MaximumValue="180"
+                    ErrorMessage="Enter a number between 1 and 180"
+                    CssClass="text-danger" Display="Dynamic" ValidationGroup="Module"></asp:RangeValidator>
             </div>
         </div>
+
+        <div class="form-group">
+            <label class="form-label">Order index</label>
+            <asp:TextBox ID="txtModuleOrder" runat="server" CssClass="form-input-block" Text="1"></asp:TextBox>
+            <asp:RangeValidator runat="server" ControlToValidate="txtModuleOrder" Type="Integer"
+                MinimumValue="1" MaximumValue="100"
+                ErrorMessage="Enter a number between 1 and 100"
+                CssClass="text-danger" Display="Dynamic" ValidationGroup="Module"></asp:RangeValidator>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Module content (HTML allowed)</label>
+            <asp:TextBox ID="txtModuleContent" runat="server" TextMode="MultiLine"
+                CssClass="form-input-block module-content"></asp:TextBox>
+            <asp:RequiredFieldValidator runat="server" ControlToValidate="txtModuleContent"
+                ErrorMessage="Content is required" CssClass="text-danger" Display="Dynamic"
+                ValidationGroup="Module"></asp:RequiredFieldValidator>
+        </div>
+
+        <div class="actions-row">
+            <asp:Button ID="btnSaveModule" runat="server" Text="Save module"
+                CssClass="btn-primary" OnClick="btnSaveModule_Click" ValidationGroup="Module" />
+            <asp:Button ID="btnCancelModule" runat="server" Text="Cancel"
+                CssClass="btn-secondary" OnClick="btnCancelModule_Click" CausesValidation="false" />
+        </div>
+    </asp:Panel>
+
+    <div class="panel">
+        <h2>All courses</h2>
+        <p class="panel-subtitle">Click a course to expand its modules.</p>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Level</th>
+                    <th>Modules</th>
+                    <th>Enrolments</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <asp:Repeater ID="rptCourses" runat="server" OnItemCommand="rptCourses_ItemCommand">
+                    <ItemTemplate>
+                        <tr>
+                            <td><strong><%# Eval("Title") %></strong></td>
+                            <td><span class='<%# "pill " + Eval("Difficulty").ToString().ToLower() %>'><%# Eval("Difficulty") %></span></td>
+                            <td><%# Eval("ModuleCount") %></td>
+                            <td><%# Eval("EnrolCount") %></td>
+                            <td><span class='<%# "pill " + (Convert.ToBoolean(Eval("IsActive")) ? "active" : "inactive") %>'><%# Convert.ToBoolean(Eval("IsActive")) ? "Active" : "Inactive" %></span></td>
+                            <td>
+                                <div class="row-actions">
+                                    <asp:LinkButton runat="server" CssClass="btn-icon"
+                                        CommandName="ViewModules" CommandArgument='<%# Eval("CourseID") %>'>Modules</asp:LinkButton>
+                                    <asp:LinkButton runat="server" CssClass="btn-icon"
+                                        CommandName="EditCourse" CommandArgument='<%# Eval("CourseID") %>'>Edit</asp:LinkButton>
+                                    <asp:LinkButton runat="server" CssClass="btn-icon danger"
+                                        CommandName="DeleteCourse" CommandArgument='<%# Eval("CourseID") %>'
+                                        OnClientClick="return confirm('Delete this course and all its modules, quizzes, and enrolments? This cannot be undone.');">Delete</asp:LinkButton>
+                                </div>
+                            </td>
+                        </tr>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </tbody>
+        </table>
     </div>
 
-    <asp:HiddenField ID="hf_ShowEdit" runat="server" Value="0" />
+    <asp:Panel ID="pnlModuleList" runat="server" Visible="false" CssClass="panel">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 0.3rem;">
+            <h2>Modules in <asp:Literal ID="litExpandedCourse" runat="server"></asp:Literal></h2>
+            <asp:Button ID="btnNewModule" runat="server" Text="+ Add module"
+                CssClass="btn-primary" OnClick="btnNewModule_Click" CausesValidation="false" />
+        </div>
+        <p class="panel-subtitle">Modules are shown in their order index.</p>
 
-<script>
-    function openModal(id)  { document.getElementById(id).classList.add('open'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-    window.onload = function () {
-        if (document.getElementById('<%= hf_ShowEdit.ClientID %>').value === '1')
-            openModal('editModal');
-        document.querySelectorAll('.modal-overlay').forEach(function (m) {
-            m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('open'); });
-        });
-    };
-</script>
+        <asp:Repeater ID="rptModulesInCourse" runat="server" OnItemCommand="rptModulesInCourse_ItemCommand">
+            <ItemTemplate>
+                <div class="module-block">
+                    <span class="module-num"><%# Eval("OrderIndex") %></span>
+                    <div class="module-info">
+                        <strong><%# Eval("Title") %></strong>
+                        <div class="module-meta"><%# Eval("EstimatedMinutes") %> min read</div>
+                    </div>
+                    <div class="row-actions">
+                        <asp:LinkButton runat="server" CssClass="btn-icon"
+                            CommandName="EditModule" CommandArgument='<%# Eval("ModuleID") %>'>Edit</asp:LinkButton>
+                        <asp:LinkButton runat="server" CssClass="btn-icon danger"
+                            CommandName="DeleteModule" CommandArgument='<%# Eval("ModuleID") %>'
+                            OnClientClick="return confirm('Delete this module, its quiz, and all related progress?');">Delete</asp:LinkButton>
+                    </div>
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+    </asp:Panel>
+
 </asp:Content>
