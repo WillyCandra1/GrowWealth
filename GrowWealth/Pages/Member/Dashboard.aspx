@@ -186,7 +186,7 @@
 
         .btn-continue {
             background-color: var(--gw-ink);
-            color: var(--gw-paper);
+            color: #ffffff;
             border: 1px solid var(--gw-ink);
             padding: 0.7rem 1.4rem;
             border-radius: 6px;

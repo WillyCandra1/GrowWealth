@@ -540,15 +540,15 @@
                     <div class="team-avatar">
                         <img src="<%= ResolveUrl("~/Assets/images/team-member-1.jpg") %>" alt="LKC" />
                     </div>
-                    <h4 class="team-name">Student Name 1</h4>
-                    <span class="team-tp">TP000000</span>
+                    <h4 class="team-name">Willy Candra</h4>
+                    <span class="team-tp">TP079819</span>
                 </div>
                 <div class="team-card">
                     <div class="team-avatar">
                         <img src="<%= ResolveUrl("~/Assets/images/team-member-2.jpg") %>" alt="Team Member 2" />
                     </div>
-                    <h4 class="team-name">Student Name 2</h4>
-                    <span class="team-tp">TP000000</span>
+                    <h4 class="team-name">Richmond Deanlim</h4>
+                    <span class="team-tp">TP078141</span>
                 </div>
                 <div class="team-card">
                     <div class="team-avatar"></div>

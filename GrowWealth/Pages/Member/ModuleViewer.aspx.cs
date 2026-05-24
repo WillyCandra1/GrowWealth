@@ -131,7 +131,7 @@ namespace GrowWealth.Pages.Member
                 pnlAlreadyDone.Visible = true;
                 litCompletedDate.Text = completedAt.HasValue ? completedAt.Value.ToString("dd MMM yyyy") : "—";
                 litInfoStatus.Text = "Completed";
-                btnMarkComplete.Text = "Re-take quiz &rarr;";
+                btnMarkComplete.Text = "Re-take quiz";
             }
             else
             {

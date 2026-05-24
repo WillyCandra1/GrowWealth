@@ -95,9 +95,9 @@
             gap: 0.6rem;
         }
 
-        .btn-primary {
+        a.btn-primary {
             background-color: var(--gw-ink);
-            color: var(--gw-paper);
+            color: #ffffff;
             border: 1px solid var(--gw-ink);
             padding: 0.65rem 1.2rem;
             border-radius: 6px;
@@ -110,10 +110,10 @@
             display: inline-block;
         }
 
-        .btn-primary:hover {
+        a.btn-primary:hover {
             background-color: var(--gw-accent-dark);
             border-color: var(--gw-accent-dark);
-            color: var(--gw-paper);
+            color: #ffffff;
         }
 
         .btn-secondary {
