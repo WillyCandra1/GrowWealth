@@ -89,9 +89,11 @@ namespace GrowWealth.Pages.Member
                         {
                             imgProfile.ImageUrl = ResolveUrl(profilePic);
                             imgProfile.Visible = true;
+                            litInitials.Text = "";   
                         }
                         else
                         {
+                            imgProfile.Visible = false;  
                             litInitials.Text = BuildInitials(fullName);
                         }
                     }
