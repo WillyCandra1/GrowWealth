@@ -311,7 +311,7 @@
                 <asp:Button ID="btnPrev" runat="server" Text="&larr; Previous module"
                     CssClass="mv-btn" OnClick="btnPrev_Click" CausesValidation="false" />
 
-                <asp:Button ID="btnMarkComplete" runat="server" Text="Mark complete &amp; take quiz &rarr;"
+                <asp:Button ID="btnMarkComplete" runat="server" Text="Take quiz &rarr;"
                     CssClass="mv-btn mv-btn-primary" OnClick="btnMarkComplete_Click" />
             </div>
         </article>

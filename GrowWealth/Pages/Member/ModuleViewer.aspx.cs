@@ -131,7 +131,7 @@ namespace GrowWealth.Pages.Member
                 pnlAlreadyDone.Visible = true;
                 litCompletedDate.Text = completedAt.HasValue ? completedAt.Value.ToString("dd MMM yyyy") : "—";
                 litInfoStatus.Text = "Completed";
-                btnMarkComplete.Text = "Re-take quiz";
+                btnMarkComplete.Text = "Re-take quiz &rarr;";
             }
             else
             {
@@ -214,7 +214,26 @@ namespace GrowWealth.Pages.Member
         protected void btnMarkComplete_Click(object sender, EventArgs e)
         {
             if (ViewState["CurrentModuleID"] == null) return;
-            int moduleId = Convert.ToInt32(ViewState["CurrentModuleID"]);
+
+            // If there is a quiz, just redirect to it — module is marked complete only after passing
+            if (ViewState["QuizID"] != null)
+            {
+                Response.Redirect("~/Pages/Member/Quiz.aspx?quizId=" + ViewState["QuizID"]);
+            }
+            else
+            {
+                // No quiz for this module — mark complete directly and go back to course
+                MarkModuleComplete(Convert.ToInt32(ViewState["CurrentModuleID"]));
+
+                if (ViewState["CourseID"] != null)
+                    Response.Redirect("~/Pages/Member/CoursePage.aspx?id=" + ViewState["CourseID"]);
+                else
+                    Response.Redirect("~/Pages/Member/Dashboard.aspx");
+            }
+        }
+
+        private void MarkModuleComplete(int moduleId)
+        {
             int userId = GetCurrentUserId();
             if (userId == 0) return;
 
@@ -245,19 +264,6 @@ namespace GrowWealth.Pages.Member
                     upd.Parameters.AddWithValue("@ModuleID", moduleId);
                     upd.ExecuteNonQuery();
                 }
-            }
-
-            if (ViewState["QuizID"] != null)
-            {
-                Response.Redirect("~/Pages/Member/Quiz.aspx?quizId=" + ViewState["QuizID"]);
-            }
-            else if (ViewState["CourseID"] != null)
-            {
-                Response.Redirect("~/Pages/Member/CoursePage.aspx?id=" + ViewState["CourseID"]);
-            }
-            else
-            {
-                Response.Redirect("~/Pages/Member/Dashboard.aspx");
             }
         }
     }

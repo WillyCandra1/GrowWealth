@@ -220,6 +220,8 @@ namespace GrowWealth.Pages.Member
             int passMark = Convert.ToInt32(Session["PassMark"]);
             int scorePct = (total == 0) ? 0 : (correct * 100 / total);
 
+            // Always save the quiz attempt regardless of pass or fail
+            // This keeps recent activity, recent scores and average score updated
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 conn.Open();
@@ -233,6 +235,41 @@ namespace GrowWealth.Pages.Member
                 cmd.ExecuteNonQuery();
             }
 
+            // Only mark the module as complete if the user passed
+            bool passed = scorePct >= passMark;
+            if (passed)
+            {
+                int moduleId = Convert.ToInt32(Session["ModuleID"]);
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+                    SqlCommand check = new SqlCommand(
+                        "SELECT COUNT(*) FROM UserProgress WHERE UserID = @UserID AND ModuleID = @ModuleID", conn);
+                    check.Parameters.AddWithValue("@UserID", userId);
+                    check.Parameters.AddWithValue("@ModuleID", moduleId);
+                    int existing = Convert.ToInt32(check.ExecuteScalar());
+
+                    if (existing == 0)
+                    {
+                        SqlCommand ins = new SqlCommand(
+                            @"INSERT INTO UserProgress (UserID, ModuleID, IsCompleted, CompletedAt)
+                              VALUES (@UserID, @ModuleID, 1, GETDATE())", conn);
+                        ins.Parameters.AddWithValue("@UserID", userId);
+                        ins.Parameters.AddWithValue("@ModuleID", moduleId);
+                        ins.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        SqlCommand upd = new SqlCommand(
+                            @"UPDATE UserProgress SET IsCompleted = 1, CompletedAt = GETDATE()
+                              WHERE UserID = @UserID AND ModuleID = @ModuleID", conn);
+                        upd.Parameters.AddWithValue("@UserID", userId);
+                        upd.Parameters.AddWithValue("@ModuleID", moduleId);
+                        upd.ExecuteNonQuery();
+                    }
+                }
+            }
+
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
 
@@ -241,7 +278,6 @@ namespace GrowWealth.Pages.Member
             litResultTotal.Text = total.ToString();
             litResultPassMark.Text = passMark.ToString();
 
-            bool passed = scorePct >= passMark;
             if (passed)
             {
                 resultIconWrap.Attributes["class"] = "result-icon pass";
