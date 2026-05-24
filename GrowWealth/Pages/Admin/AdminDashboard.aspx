@@ -128,17 +128,26 @@
         .data-table tr:hover td { background-color: var(--gw-paper); }
 
         .data-table .role-pill {
-            display: inline-block;
-            padding: 0.2rem 0.65rem;
-            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
             font-size: 0.72rem;
             font-weight: 600;
+            color: var(--gw-ink-muted);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
-        .role-pill.admin { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
-        .role-pill.member { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
+        .data-table .role-pill::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .role-pill.admin::before { background-color: var(--gw-gold); }
+        .role-pill.member::before { background-color: var(--gw-accent); }
 
         .status-dot {
             display: inline-block;

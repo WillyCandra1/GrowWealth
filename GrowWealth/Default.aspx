@@ -1,4 +1,4 @@
-<%@ Page Title="Grow Wealth — Financial literacy that compounds" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="GrowWealth._Default" %>
+<%@ Page Title="Grow Wealth &mdash; Financial literacy that compounds" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="GrowWealth._Default" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
@@ -209,12 +209,22 @@
             gap: 1.5rem;
         }
 
+        .featured-grid > a {
+            display: block;
+            text-decoration: none;
+            height: 100%;
+        }
+
         .featured-card {
             background-color: var(--gw-surface);
             border: 1px solid var(--gw-line);
             border-radius: 14px;
             padding: 2rem;
             transition: all 0.22s;
+            box-sizing: border-box;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .featured-card:hover {
@@ -224,19 +234,29 @@
         }
 
         .featured-card .level-tag {
-            display: inline-block;
-            padding: 0.25rem 0.7rem;
-            border-radius: 999px;
-            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
             font-weight: 600;
+            color: var(--gw-ink-muted);
             text-transform: uppercase;
             letter-spacing: 0.08em;
             margin-bottom: 1.25rem;
+            align-self: flex-start;
         }
 
-        .featured-card .level-tag.beginner { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
-        .featured-card .level-tag.intermediate { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
-        .featured-card .level-tag.advanced { background-color: var(--gw-rose-soft); color: var(--gw-rose); }
+        .featured-card .level-tag::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .featured-card .level-tag.beginner::before { background-color: var(--gw-accent); }
+        .featured-card .level-tag.intermediate::before { background-color: var(--gw-gold); }
+        .featured-card .level-tag.advanced::before { background-color: var(--gw-rose); }
 
         .featured-card h3 {
             font-size: 1.35rem;
@@ -246,7 +266,7 @@
         .featured-card p {
             color: var(--gw-ink-soft);
             font-size: 0.92rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: auto; /* pushes meta to the bottom */
             min-height: 70px;
         }
 
@@ -337,10 +357,76 @@
             color: var(--gw-paper);
         }
 
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .team-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .team-avatar {
+            width: 210px;
+            height: 210px;
+            border-radius: 8px;
+            border: 2px dashed var(--gw-line);
+            padding: 4px;
+            margin-bottom: 1.25rem;
+            background-color: var(--gw-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .team-avatar::before {
+            content: 'PHOTO';
+            font-size: 0.65rem;
+            color: var(--gw-ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .team-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .team-name {
+            font-family: var(--gw-serif);
+            font-size: 1.1rem;
+            color: var(--gw-ink);
+            margin-bottom: 0.25rem;
+        }
+
+        .team-tp {
+            font-size: 0.85rem;
+            color: var(--gw-ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
         @media (max-width: 920px) {
             .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
             .featured-grid, .why-grid { grid-template-columns: 1fr; }
             .hero-stats { flex-wrap: wrap; gap: 1.5rem 2.5rem; }
+            .team-grid { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        }
+
+        @media (max-width: 600px) {
+            .team-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </asp:Content>
@@ -352,7 +438,7 @@
             <div>
                 <div class="hero-eyebrow">Financial literacy &middot; Made for Malaysia</div>
                 <h1>Build financial knowledge<br/>that <em>compounds</em>.</h1>
-                <p class="hero-lead">A focused, editorial-style platform that takes you from financial basics to confident investing — at your own pace, with interactive labs and quizzes.</p>
+                <p class="hero-lead">A focused, editorial-style platform that takes you from financial basics to confident investing &mdash; at your own pace, with interactive labs and quizzes.</p>
                 <div class="hero-cta">
                     <a href="<%= ResolveUrl("~/Pages/Public/Register.aspx") %>" class="btn-cta-primary">Start learning free</a>
                     <a href="#courses" class="btn-cta-secondary">Browse courses &rarr;</a>
@@ -400,7 +486,7 @@
             <div class="featured-grid">
                 <asp:Repeater ID="rptFeatured" runat="server">
                     <ItemTemplate>
-                        <a href='<%# ResolveUrl("~/Pages/Public/Register.aspx") %>' style="text-decoration:none;">
+                        <a href='<%# ResolveUrl("~/Pages/Public/Register.aspx") %>'>
                             <div class="featured-card">
                                 <span class='<%# "level-tag " + Eval("Difficulty").ToString().ToLower() %>'><%# Eval("Difficulty") %></span>
                                 <h3><%# Eval("Title") %></h3>
@@ -443,7 +529,47 @@
         </div>
     </section>
 
-    <section class="cta-section" id="about">
+    <section class="section" id="about">
+        <div class="section-inner">
+            <div class="section-eyebrow">The Team</div>
+            <h2>Meet the people behind Grow Wealth.</h2>
+            <p class="section-lead">We are a dedicated group of students building a better financial future for Malaysians.</p>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <img src="<%= ResolveUrl("~/Assets/images/team-member-1.jpg") %>" alt="LKC" />
+                    </div>
+                    <h4 class="team-name">Student Name 1</h4>
+                    <span class="team-tp">TP000000</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <img src="<%= ResolveUrl("~/Assets/images/team-member-2.jpg") %>" alt="Team Member 2" />
+                    </div>
+                    <h4 class="team-name">Student Name 2</h4>
+                    <span class="team-tp">TP000000</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar"></div>
+                    <h4 class="team-name">Student Name 3</h4>
+                    <span class="team-tp">TP000000</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar"></div>
+                    <h4 class="team-name">Student Name 4</h4>
+                    <span class="team-tp">TP000000</span>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar"></div>
+                    <h4 class="team-name">Student Name 5</h4>
+                    <span class="team-tp">TP000000</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" id="cta">
         <div class="cta-inner">
             <h2>Take the first step.</h2>
             <p>Create your free Grow Wealth account in under a minute and start learning today.</p>

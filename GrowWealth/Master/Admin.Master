@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grow Wealth — Admin</title>
+    <title>Grow Wealth &mdash; Admin</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/css/style.css") %>" />
 
     <style>
@@ -16,11 +16,11 @@
             --gw-ink: #1a1a1a;
             --gw-ink-soft: #2c2c2c;
             --gw-ink-muted: #6b6b6b;
-            --gw-paper: #faf8f3;
-            --gw-paper-warm: #f3eee4;
+            --gw-paper: #ffffff;
+            --gw-paper-warm: #f7f9fa;
             --gw-surface: #ffffff;
-            --gw-line: #e5e0d6;
-            --gw-line-soft: #ede9e0;
+            --gw-line: #e2e6ea;
+            --gw-line-soft: #f0f2f5;
 
             --gw-accent: #0b6b3a;
             --gw-accent-dark: #094f2b;
@@ -30,8 +30,8 @@
             --gw-rose: #9c3a3a;
             --gw-rose-soft: #f5e0dc;
 
-            --gw-serif: 'Fraunces', Georgia, serif;
-            --gw-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --gw-serif: 'Merriweather', Georgia, serif;
+            --gw-sans: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         * { box-sizing: border-box; }

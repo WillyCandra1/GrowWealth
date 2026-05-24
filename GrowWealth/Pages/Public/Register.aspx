@@ -1,4 +1,4 @@
-<%@ Page Title="Get started — Grow Wealth" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Register.aspx.cs" Inherits="GrowWealth.Pages.Public.Register" %>
+<%@ Page Title="Get started &middot; Grow Wealth" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Register.aspx.cs" Inherits="GrowWealth.Pages.Public.Register" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
@@ -315,7 +315,7 @@
         <div class="auth-art-side">
             <div>
                 <h2 style="font-size: 2.2rem; margin-bottom: 1rem; line-height: 1.15;">Three reasons to start today.</h2>
-                <p style="color: var(--gw-ink-soft); font-size: 1rem; max-width: 420px;">A no-noise, editorial approach to learning about money — built for the way you actually read and learn.</p>
+                <p style="color: var(--gw-ink-soft); font-size: 1rem; max-width: 420px;">A no-noise, editorial approach to learning about money &mdash; built for the way you actually read and learn.</p>
 
                 <ul class="feature-list">
                     <li>

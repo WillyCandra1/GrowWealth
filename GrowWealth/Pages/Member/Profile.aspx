@@ -67,20 +67,27 @@
         }
 
         .status-pill {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background-color: var(--gw-accent-soft);
-            color: var(--gw-accent);
-            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
             font-size: 0.78rem;
             font-weight: 600;
+            color: var(--gw-ink-muted);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
-        .status-pill.suspended {
-            background-color: var(--gw-rose-soft);
-            color: var(--gw-rose);
+        .status-pill::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--gw-accent);
+        }
+
+        .status-pill.suspended::before {
+            background-color: var(--gw-rose);
         }
 
         .stat-strip {

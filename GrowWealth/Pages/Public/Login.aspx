@@ -1,4 +1,4 @@
-<%@ Page Title="Log in — Grow Wealth" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="GrowWealth.Pages.Public.Login" %>
+<%@ Page Title="Log in &middot; Grow Wealth" Language="C#" MasterPageFile="~/Master/before_landing.Master" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="GrowWealth.Pages.Public.Login" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>

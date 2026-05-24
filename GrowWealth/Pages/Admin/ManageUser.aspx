@@ -120,20 +120,29 @@
         .data-table tr:hover td { background-color: var(--gw-paper); }
 
         .role-pill, .status-pill {
-            display: inline-block;
-            padding: 0.22rem 0.7rem;
-            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
             font-size: 0.72rem;
             font-weight: 600;
+            color: var(--gw-ink-muted);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
-        .role-pill.admin { background-color: var(--gw-gold-soft); color: var(--gw-gold); }
-        .role-pill.member { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
+        .role-pill::before, .status-pill::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
 
-        .status-pill.active { background-color: var(--gw-accent-soft); color: var(--gw-accent); }
-        .status-pill.suspended { background-color: var(--gw-rose-soft); color: var(--gw-rose); }
+        .role-pill.admin::before { background-color: var(--gw-gold); }
+        .role-pill.member::before { background-color: var(--gw-accent); }
+
+        .status-pill.active::before { background-color: var(--gw-accent); }
+        .status-pill.suspended::before { background-color: var(--gw-rose); }
 
         .row-actions {
             display: flex;
