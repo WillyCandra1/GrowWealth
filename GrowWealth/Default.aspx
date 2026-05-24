@@ -552,21 +552,21 @@
                 </div>
                 <div class="team-card">
                     <div class="team-avatar">
-                        <img src="<%= ResolveUrl("~/Assets/images/team-member-3.jpg") %>" alt="Team Member 2" />
+                        <img src="<%= ResolveUrl("~/Assets/images/team-member-3.jpg") %>" alt="Team Member 3" />
                     </div>
                     <h4 class="team-name">Evan Ferdinand</h4>
                     <span class="team-tp">TP077617</span>
                 </div>
                 <div class="team-card">
                     <div class="team-avatar">
-                        <img src="<%= ResolveUrl("~/Assets/images/team-member-4.jpg") %>" alt="Team Member 2" />
+                        <img src="<%= ResolveUrl("~/Assets/images/team-member-4.jpg") %>" alt="Team Member 4" />
                     </div>
                     <h4 class="team-name">Edbert Felo Tjunganda</h4>
                     <span class="team-tp">TP079491</span>
                 </div>
                 <div class="team-card">
                     <div class="team-avatar">
-                        <img src="<%= ResolveUrl("~/Assets/images/team-member-5.jpg") %>" alt="Team Member 2" />
+                        <img src="<%= ResolveUrl("~/Assets/images/team-member-5.jpg") %>" alt="Team Member 5" />
                     </div>
                     <h4 class="team-name">Vincent Octacolin</h4>
                     <span class="team-tp">TP085742</span>
