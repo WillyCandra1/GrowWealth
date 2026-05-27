@@ -17,11 +17,6 @@ namespace GrowWealth.Pages.Admin
             if (!IsPostBack)
             {
                 LoadCourses();
-                int courseId;
-                if (int.TryParse(Request.QueryString["expand"], out courseId))
-                {
-                    ShowModulesPanel(courseId);
-                }
             }
         }
 
