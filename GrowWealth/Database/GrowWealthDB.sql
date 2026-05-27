@@ -14,9 +14,6 @@ GO
 USE GrowWealthDB;
 GO
 
-/* ------------------------------------------------------------now
-   Schema
-   ------------------------------------------------------------ */
 
 CREATE TABLE Role (
     RoleID      INT IDENTITY(1,1) PRIMARY KEY,
@@ -131,18 +128,8 @@ CREATE TABLE InvestmentSimulation (
 );
 GO
 
-/* ------------------------------------------------------------
-   Roles
-   ------------------------------------------------------------ */
-
 INSERT INTO Role (RoleName) VALUES ('Admin'), ('Member');
 GO
-
-/* ------------------------------------------------------------
-   Users
-   Admin password: admin123
-   Member password (everyone except suspended): password123
-   ------------------------------------------------------------ */
 
 INSERT INTO [User] (FullName, Email, PasswordHash, RoleID, AccountStatus, CreatedAt, LastLogin)
 VALUES
@@ -154,10 +141,6 @@ VALUES
     ('Siti Nurhaliza', 'siti@email.com', 'password123', 2, 'Active', DATEADD(month, -2, GETDATE()), DATEADD(day, -1, GETDATE())),
     ('Daniel Foo', 'daniel@email.com', 'password123', 2, 'Suspended', DATEADD(month, -6, GETDATE()), DATEADD(day, -30, GETDATE()));
 GO
-
-/* ------------------------------------------------------------
-   Courses (3)
-   ------------------------------------------------------------ */
 
 INSERT INTO Course (Title, Description, Difficulty, EstimatedHours, IsActive)
 VALUES
@@ -174,11 +157,6 @@ GO
 USE GrowWealthDB;
 GO
 
-/* ------------------------------------------------------------
-   Modules — 5 per course = 15 total
-   ------------------------------------------------------------ */
-
-/* ===== Course 1: Personal Finance Foundations ===== */
 
 INSERT INTO Module (CourseID, Title, Content, OrderIndex, EstimatedMinutes) VALUES
 (1, 'Understanding Money & Mindset',
@@ -218,7 +196,6 @@ N'<p>Goals without dates are dreams. Dreams don''t earn interest. To turn financ
 
 GO
 
-/* ===== Course 2: Investing Essentials ===== */
 
 INSERT INTO Module (CourseID, Title, Content, OrderIndex, EstimatedMinutes) VALUES
 (2, 'What Investing Really Means',
@@ -258,7 +235,6 @@ N'<p>To buy stocks or ETFs on Bursa Malaysia, you need a <strong>CDS</strong> (C
 
 GO
 
-/* ===== Course 3: Advanced Wealth Building ===== */
 
 INSERT INTO Module (CourseID, Title, Content, OrderIndex, EstimatedMinutes) VALUES
 (3, 'Asset Allocation Strategy',
@@ -300,9 +276,6 @@ GO
 USE GrowWealthDB;
 GO
 
-/* ------------------------------------------------------------
-   Quizzes — one per module = 15 quizzes
-   ------------------------------------------------------------ */
 
 INSERT INTO Quiz (ModuleID, Title, PassMark) VALUES
 (1,  'Money Mindset Quiz', 60),
@@ -322,12 +295,6 @@ INSERT INTO Quiz (ModuleID, Title, PassMark) VALUES
 (15, 'Wealth Protection Quiz', 60);
 GO
 
-/* ------------------------------------------------------------
-   Questions — 5 per quiz = 75 total
-   QuizID is the same as ModuleID since they were inserted in order
-   ------------------------------------------------------------ */
-
-/* Quiz 1 — Money Mindset */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (1, 'According to the module, what mainly separates people who handle money well from others?',
     'They know more financial formulas', 'They earn higher incomes',
@@ -345,7 +312,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'A specific bank balance', 'Owning property',
     'The gap between income and spending, over time', 'Having multiple credit cards', 'C', 5);
 
-/* Quiz 2 — Budgeting Basics */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (2, 'In the 50/30/20 budgeting rule, what does the 20% represent?',
     'Wants', 'Needs',
@@ -363,7 +329,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'The one with the most categories', 'The one your bank prepares for you',
     'The one you''ll keep using next month', 'The one designed by an accountant', 'C', 5);
 
-/* Quiz 3 — Saving Strategies */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (3, 'The "pay yourself first" approach means:',
     'Treating yourself to luxuries first', 'Moving money to savings before any spending',
@@ -381,7 +346,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     '"Save more this year"', '"Be financially smart"',
     '"RM 12,000 emergency fund by December"', '"Earn more interest"', 'C', 5);
 
-/* Quiz 4 — Debt Management */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (4, 'Which is an example of productive debt?',
     'Credit card balance for a holiday', 'Personal loan for a wedding',
@@ -399,7 +363,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'How much can I borrow?', 'What perks does the bank offer?',
     'If my income stopped tomorrow, could I still service this?', 'How long is the loan tenure?', 'C', 5);
 
-/* Quiz 5 — Financial Goals */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (5, 'A short-term financial goal typically has a timeframe of:',
     'Under 1 year', '3 to 5 years',
@@ -417,7 +380,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'To impress visitors', 'Visible goals get pursued; forgotten ones get abandoned',
     'It''s required by the bank', 'To track your friends'' progress', 'B', 5);
 
-/* Quiz 6 — Investing Fundamentals */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (6, 'The main job of saving (versus investing) is:',
     'Preservation of money you''ll need soon', 'Aggressive growth',
@@ -435,7 +397,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'It earns more interest in nominal terms today', 'It compounds for the longest time',
     'Inflation can''t touch it', 'Brokers reward early investors', 'B', 5);
 
-/* Quiz 7 — Asset Classes */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (7, 'Owning a share (stock) of a company means:',
     'You lent money to the company', 'You own part of the company',
@@ -453,7 +414,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'No fees at all', 'Only a one-time RM 10 fee',
     'A sales charge plus an annual management fee', 'A government tax of 12%', 'C', 5);
 
-/* Quiz 8 — Risk vs Return */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (8, 'The first rule of investing stated in the module is:',
     'Always sell at peaks', 'Higher potential return comes with higher risk',
@@ -471,7 +431,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'You should borrow more to buy', 'Your real risk tolerance is lower than you think',
     'You''re ready for crypto', 'You should switch to day trading', 'B', 5);
 
-/* Quiz 9 — How Markets Work */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (9, 'Malaysia''s main stock exchange is:',
     'NASDAQ', 'NYSE',
@@ -489,7 +448,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'It eliminates all losses', 'No single country''s market drives your whole result',
     'Foreign investments are tax-free everywhere', 'It removes the need to rebalance', 'B', 5);
 
-/* Quiz 10 — Opening Accounts */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (10, 'To trade on Bursa Malaysia you need a CDS account and:',
     'An EPF account', 'A trading account with a broker',
@@ -507,7 +465,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'Day trading penny stocks', 'Automated monthly investing and resisting the urge to fiddle',
     'All-in on the latest IPO', 'Borrowing to invest', 'B', 5);
 
-/* Quiz 11 — Asset Allocation */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (11, 'Studies suggest asset allocation explains roughly what share of long-term return variation?',
     '10–20%', '40–50%',
@@ -525,7 +482,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'All cash', '100% cryptocurrency',
     '50% global equities, 20% Malaysian equities, 20% bonds, 10% cash', '100% Malaysian small caps', 'C', 5);
 
-/* Quiz 12 — Rebalancing */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (12, 'Rebalancing means:',
     'Selling everything and starting over', 'Bringing the portfolio back to its target allocation',
@@ -543,7 +499,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'Sell winners aggressively', 'Use new contributions to top up under-target assets',
     'Borrow to buy more', 'Wait for retirement', 'B', 5);
 
-/* Quiz 13 — Tax Planning */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (13, 'Currently in Malaysia, capital gains on most listed equities are:',
     'Taxed at 30%', 'Taxed at 15%',
@@ -561,7 +516,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'Always tax-free', 'Generally taxable (with transitional exemptions)',
     'Confiscated', 'Only taxable for retirees', 'B', 5);
 
-/* Quiz 14 — Retirement Planning */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (14, 'The EPF rough target by age 50 is:',
     '1× annual salary', '3× annual salary',
@@ -579,7 +533,6 @@ INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, 
     'EPF only', 'PRS only',
     'EPF, PRS, and personal investments', 'Property only', 'C', 5);
 
-/* Quiz 15 — Wealth Protection */
 INSERT INTO Question (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption, OrderIndex) VALUES
 (15, 'The role of insurance is to cover:',
     'Daily expenses', 'Low-probability, high-impact events',
@@ -601,10 +554,6 @@ GO
 USE GrowWealthDB;
 GO
 
-/* ------------------------------------------------------------
-   Enrollments
-   ------------------------------------------------------------ */
-
 INSERT INTO Enrollment (UserID, CourseID, EnrolledAt) VALUES
 -- Ahmad (most progressed): 3 courses
 (2, 1, DATEADD(month, -5, GETDATE())),
@@ -622,10 +571,6 @@ INSERT INTO Enrollment (UserID, CourseID, EnrolledAt) VALUES
 (6, 1, DATEADD(week, -5, GETDATE()));
 
 GO
-
-/* ------------------------------------------------------------
-   UserProgress — varied completion
-   ------------------------------------------------------------ */
 
 -- Ahmad: completed all of Course 1, 4 of 5 in Course 2, 2 of 5 in Course 3
 INSERT INTO UserProgress (UserID, ModuleID, IsCompleted, CompletedAt) VALUES
@@ -715,9 +660,6 @@ INSERT INTO Quiz_Attempt (UserID, QuizID, Score, TotalQuestions, AttemptedAt) VA
 
 GO
 
-/* ------------------------------------------------------------
-   Login Logs — recent activity
-   ------------------------------------------------------------ */
 
 INSERT INTO Login_Log (UserID, LoginTime, IPAddress, Success, FailReason) VALUES
 (1, DATEADD(hour, -2, GETDATE()), '203.115.20.14', 1, NULL),
@@ -741,9 +683,6 @@ INSERT INTO Login_Log (UserID, LoginTime, IPAddress, Success, FailReason) VALUES
 
 GO
 
-/* ------------------------------------------------------------
-   Investment Simulations — sample lab runs
-   ------------------------------------------------------------ */
 
 INSERT INTO InvestmentSimulation
     (UserID, InitialAmount, MonthlyContribution, AnnualRate, DurationYears, CompoundingPerYear, FinalValue, InterestEarned, RunAt)
