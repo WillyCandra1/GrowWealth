@@ -91,14 +91,41 @@ namespace GrowWealth.Pages.Public
         {
             try
             {
-                SqlCommand cmd = new SqlCommand(
+                using (SqlCommand cmd = new SqlCommand(
                     @"INSERT INTO Login_Log (UserID, LoginTime, IPAddress, Success, FailReason)
-                      VALUES (@UserID, GETDATE(), @IP, @Success, @Reason)", conn);
-                cmd.Parameters.AddWithValue("@UserID", userId > 0 ? (object)userId : DBNull.Value);
-                cmd.Parameters.AddWithValue("@IP", Request.UserHostAddress ?? "unknown");
-                cmd.Parameters.AddWithValue("@Success", success);
-                cmd.Parameters.AddWithValue("@Reason", string.IsNullOrEmpty(failReason) ? (object)DBNull.Value : failReason);
-                cmd.ExecuteNonQuery();
+                      VALUES (@UserID, GETDATE(), @IP, @Success, @Reason)", conn))
+                {
+                    if (userId > 0)
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", DBNull.Value);
+                    }
+
+                    if (Request.UserHostAddress != null)
+                    {
+                        cmd.Parameters.AddWithValue("@IP", Request.UserHostAddress);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@IP", "unknown");
+                    }
+
+                    cmd.Parameters.AddWithValue("@Success", success);
+
+                    if (string.IsNullOrEmpty(failReason))
+                    {
+                        cmd.Parameters.AddWithValue("@Reason", DBNull.Value);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("@Reason", failReason);
+                    }
+
+                    cmd.ExecuteNonQuery();
+                }
             }
             catch { }
         }
@@ -109,4 +136,6 @@ namespace GrowWealth.Pages.Public
             litError.Text = Server.HtmlEncode(msg);
         }
     }
+}
+
 }

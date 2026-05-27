@@ -44,7 +44,7 @@ namespace GrowWealth.Pages.Public
 
                 if (dup > 0)
                 {
-                    ShowError("An account with that email already exists. Try logging in instead.");
+                    ShowError("The email already been used.");
                     return;
                 }
 
