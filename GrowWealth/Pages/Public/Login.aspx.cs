@@ -137,5 +137,3 @@ namespace GrowWealth.Pages.Public
         }
     }
 }
-
-}
