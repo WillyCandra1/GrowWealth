@@ -29,6 +29,10 @@ namespace GrowWealth.Pages.Member
 
             if (!IsPostBack)
             {
+                if (Request.QueryString["saved"] == "1")
+                {
+                    ShowSuccess("Your profile has been updated.");
+                }
                 LoadProfile();
             }
         }
@@ -255,8 +259,7 @@ namespace GrowWealth.Pages.Member
             txtNewPassword.Text = "";
             txtConfirmPassword.Text = "";
 
-            ShowSuccess("Your profile has been updated.");
-            LoadProfile();
+            Response.Redirect("~/Pages/Member/Profile.aspx?saved=1");
         }
 
         protected void btnDelete_Click(object sender, EventArgs e)
